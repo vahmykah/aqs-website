@@ -1,0 +1,186 @@
+---
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import CartDrawer from '../components/CartDrawer.astro';
+import InfoDrawer from '../components/InfoDrawer.astro';
+import ShortcutBar from '../components/ShortcutBar.astro';
+import FloatingCart from '../components/FloatingCart.astro';
+import CartConfirmationModal from '../components/CartConfirmationModal.astro';
+
+interface Props {
+  title?: string;
+  description?: string;
+  noindex?: boolean;
+  hideHeader?: boolean;
+}
+
+const { 
+  title = "A Quiet Space | Carry What Matters", 
+  description = "A study in containment. Premium carrying systems designed for the quiet space between excess and necessity.",
+  noindex = false,
+  hideHeader = false
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Robots index rule (noindex for upcoming pages) -->
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+    
+    <!-- Preload Critical Fonts to Eliminate Flash of Unstyled Text (FOUT) -->
+    <link rel="preload" href="/fonts/satoshi/Satoshi-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
+    <link rel="preload" href="/fonts/satoshi/Satoshi-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
+    <link rel="preload" href="/fonts/sentient/Sentient-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
+    <link rel="preload" href="/fonts/sentient/Sentient-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
+
+    <!-- Favicon (AQS Official Logo) -->
+    <link rel="icon" type="image/png" href="/images/logo.png" />
+    
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    
+    <!-- Open Graph / SEO -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content="https://aquietspace.id" />
+    <meta property="og:image" content="/images/hero-desktop.jpg" />
+    <meta property="og:site_name" content="A Quiet Space" />
+
+    <!-- Midtrans Snap Script Integration -->
+    <script is:inline src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="SB-Mid-client-key-placeholder"></script>
+  </head>
+  <body>
+    <!-- Main Shell -->
+    {!hideHeader && <Header />}
+    
+    <main id="main-content">
+      <slot />
+    </main>
+    
+    <Footer />
+
+    <!-- Drawers, Overlays & Modals -->
+    <CartDrawer />
+    <InfoDrawer />
+    <ShortcutBar />
+    <FloatingCart />
+    <CartConfirmationModal />
+
+    <!-- Simple client-side store logic -->
+    <script>
+      class CartStore {
+        items: Array<{ id: string, name: string, price: number, quantity: number, image: string }> = [];
+        
+        constructor() {
+          this.load();
+        }
+
+        load() {
+          const stored = localStorage.getItem('aqs_cart');
+          if (stored) {
+            try {
+              this.items = JSON.parse(stored);
+            } catch (e) {
+              this.items = [];
+            }
+          }
+          this.emit();
+        }
+
+        save() {
+          localStorage.setItem('aqs_cart', JSON.stringify(this.items));
+          this.emit();
+        }
+
+        addItem(item: any, quantity: number = 1) {
+          const qty = quantity || 1;
+          const existing = this.items.find(i => i.id === item.id);
+          if (existing) {
+            existing.quantity += qty;
+            // Always sync latest product data (price, image) to fix stale localStorage entries
+            if (item.price) existing.price = item.price;
+            if (item.image) existing.image = item.image;
+          } else {
+            this.items.push({ ...item, quantity: qty });
+          }
+          this.save();
+          // Open the cart confirmation modal instead of directly opening the drawer
+          if ((window as any).AQS_CartModal) {
+            (window as any).AQS_CartModal.show({ ...item, quantity: qty });
+          } else {
+            this.openCart();
+          }
+        }
+
+        removeItem(id: string) {
+          this.items = this.items.filter(i => i.id !== id);
+          this.save();
+        }
+
+        updateQuantity(id: string, qty: number) {
+          const item = this.items.find(i => i.id === id);
+          if (item) {
+            item.quantity = qty;
+            if (item.quantity <= 0) {
+              this.removeItem(id);
+              return;
+            }
+          }
+          this.save();
+        }
+
+        openCart() {
+          document.body.classList.add('cart-open');
+          window.dispatchEvent(new CustomEvent('aqs-cart-toggle', { detail: { open: true } }));
+        }
+
+        closeCart() {
+          document.body.classList.remove('cart-open');
+          window.dispatchEvent(new CustomEvent('aqs-cart-toggle', { detail: { open: false } }));
+        }
+
+        openInfo() {
+          document.body.classList.add('info-open');
+          window.dispatchEvent(new CustomEvent('aqs-info-toggle', { detail: { open: true } }));
+        }
+
+        closeInfo() {
+          document.body.classList.remove('info-open');
+          window.dispatchEvent(new CustomEvent('aqs-info-toggle', { detail: { open: false } }));
+        }
+
+        emit() {
+          window.dispatchEvent(new CustomEvent('aqs-cart-update', { detail: { items: this.items } }));
+        }
+      }
+
+      (window as any).AQS_Cart = new CartStore();
+
+      // Data reconciliation: fix any stale product prices/images in localStorage
+      // This ensures existing cart entries always reflect the current product catalog
+      (function reconcileCartData() {
+        const PRODUCT_CATALOG: Record<string, { price: number; image: string }> = {
+          'soe-bag-1': { price: 305000, image: '/images/front.jpg' },
+          'soe-bag-2': { price: 285000, image: '/images/bag-2-front.jpg' }
+        };
+        const cart = (window as any).AQS_Cart;
+        if (!cart || !cart.items || cart.items.length === 0) return;
+        let changed = false;
+        cart.items.forEach((item: any) => {
+          const catalog = PRODUCT_CATALOG[item.id];
+          if (catalog) {
+            if (item.price !== catalog.price) { item.price = catalog.price; changed = true; }
+            if (item.image !== catalog.image) { item.image = catalog.image; changed = true; }
+          }
+        });
+        if (changed) cart.save();
+      })();
+    </script>
+  </body>
+</html>

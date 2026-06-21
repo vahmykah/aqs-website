@@ -1,0 +1,61 @@
+---
+interface Props {
+  subtitle: string;
+  description: string;
+}
+
+const { subtitle, description } = Astro.props;
+---
+
+<section class="description-section">
+  <div class="desc-container">
+    <h2 class="desc-subtitle">{subtitle}</h2>
+    <p class="desc-body">{description}</p>
+  </div>
+</section>
+
+<style>
+  .description-section {
+    padding: var(--spacing-xl) 0;
+    background-color: var(--color-bg);
+    border-top: 1px solid var(--color-border);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  }
+
+  .desc-container {
+    max-width: 680px;
+    padding: 0 var(--spacing-md);
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .desc-subtitle {
+    font-family: var(--font-serif);
+    font-size: var(--text-xl);
+    font-weight: 400;
+    letter-spacing: 0.05em;
+    color: var(--color-text-primary);
+  }
+
+  .desc-body {
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    line-height: 1.8;
+    color: var(--color-text-secondary);
+    letter-spacing: 0.02em;
+  }
+
+  @media (max-width: 767px) {
+    .description-section {
+      padding: var(--spacing-lg) 0;
+    }
+    
+    .desc-subtitle {
+      font-size: var(--text-lg);
+    }
+  }
+</style>

@@ -1,0 +1,100 @@
+---
+---
+
+<section id="teaser" class="teaser-section">
+  <div class="teaser-container">
+    <div class="teaser-image-wrap">
+      <!-- Dark/Low-contrast abstract crop preview image -->
+      <img src="/images/teaser.jpg" alt="SOE Bag 2 Silhouette abstract crop" class="teaser-img" width="800" height="1000" loading="lazy" />
+      
+      <!-- Overlay details in Satoshi font -->
+      <div class="teaser-overlay-details">
+        <h2 class="teaser-title">SOE Bag 2</h2>
+        <p class="teaser-status">Coming Soon</p>
+        <p class="teaser-release">Private Release.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .teaser-section {
+    padding: var(--spacing-lg) 0;
+    background-color: var(--color-bg);
+    display: flex;
+    justify-content: center;
+  }
+
+  .teaser-container {
+    width: 100%;
+    max-width: 800px;
+    padding: 0 var(--spacing-md);
+  }
+
+  .teaser-image-wrap {
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    background-color: #1a1a1a; /* Dark background to frame the teaser */
+    border: 1px solid var(--color-border);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .teaser-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.25; /* Highly shadowed, abstract, low-contrast preview */
+    transition: opacity 0.5s ease;
+  }
+
+  .teaser-image-wrap:hover .teaser-img {
+    opacity: 0.35;
+  }
+
+  .teaser-overlay-details {
+    position: absolute;
+    bottom: 3rem;
+    left: 3rem;
+    color: #F9F8F6; /* Muted paper color for dark overlay contrast */
+    font-family: var(--font-sans);
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .teaser-title {
+    font-size: var(--text-base);
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  .teaser-status {
+    font-size: var(--text-xs);
+    letter-spacing: 0.1em;
+    opacity: 0.8;
+  }
+
+  .teaser-release {
+    font-size: var(--text-xs);
+    letter-spacing: 0.1em;
+    opacity: 0.6;
+    margin-top: 0.25rem;
+  }
+
+  @media (max-width: 767px) {
+    .teaser-section {
+      padding: var(--spacing-md) 0;
+    }
+
+    .teaser-container {
+      padding: 0 1.25rem;
+    }
+
+    .teaser-overlay-details {
+      bottom: 2rem;
+      left: 2rem;
+    }
+  }
+</style>

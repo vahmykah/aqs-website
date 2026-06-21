@@ -1,0 +1,443 @@
+---
+---
+
+<div id="cart-drawer-overlay" class="drawer-overlay" aria-hidden="true"></div>
+
+<aside id="cart-drawer" class="cart-drawer" aria-label="Shopping Cart">
+  <div class="drawer-header">
+    <div class="drawer-brand-identity">
+      <h2 class="drawer-title">CART</h2>
+    </div>
+    <button id="cart-close-trigger" class="close-button" aria-label="Close Shopping Cart">CLOSE</button>
+  </div>
+
+  <div class="drawer-content">
+    <!-- Dynamic Cart Content Container -->
+    <div id="cart-items-container" class="cart-items-container">
+      <p class="empty-message">Your cart is currently empty.</p>
+    </div>
+  </div>
+
+  <div id="cart-footer" class="drawer-footer hidden">
+    <div class="summary-row">
+      <span>Subtotal</span>
+      <span id="cart-subtotal-val">IDR 0</span>
+    </div>
+    
+    <button id="cart-checkout-button" class="checkout-button">
+      CHECKOUT
+    </button>
+  </div>
+</aside>
+
+<style>
+  .drawer-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5); /* Muted overlay for dark background */
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* When cart open, dim overlay */
+  :global(body.cart-open) .drawer-overlay {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .cart-drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 400px;
+    height: 100vh;
+    background-color: var(--color-bg);
+    border-left: 1px solid var(--color-border);
+    z-index: 1001;
+    transform: translateX(100%);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    flex-direction: column;
+  }
+
+  :global(body.cart-open) .cart-drawer {
+    transform: translateX(0);
+  }
+
+  .drawer-header {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid var(--color-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .drawer-brand-identity {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .drawer-title {
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    font-weight: 700;
+    letter-spacing: 0.15em;
+  }
+
+  .close-button {
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    color: var(--color-text-secondary);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+  }
+
+  .close-button:hover {
+    color: var(--color-text-primary);
+  }
+
+  .drawer-content {
+    flex-grow: 1;
+    padding: 2rem;
+    overflow-y: auto;
+  }
+
+  .empty-message {
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    color: var(--color-text-secondary);
+    text-align: center;
+    margin-top: 4rem;
+  }
+
+  /* Cart Item Styles - Luxury Spacing and Layout */
+  :global(.cart-item) {
+    display: flex;
+    gap: 1.75rem; /* Shifting to let text breathe */
+    margin-bottom: 2.75rem; /* Negative space */
+    align-items: flex-start;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03); /* separation line */
+    padding-bottom: 1.75rem;
+  }
+
+  :global(.item-image) {
+    width: 68px; /* Reduced by ~20-25% from 90px */
+    height: 85px; /* Maintain 4:5 aspect ratio */
+    object-fit: cover;
+    background-color: #242424;
+    border: 1px solid var(--color-border);
+  }
+
+  :global(.item-details) {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  :global(.item-name) {
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    color: #ffffff; /* Pure white */
+    text-transform: uppercase;
+    margin-bottom: 10px; /* 8-12px vertical spacing */
+    line-height: 1.2;
+    display: block;
+  }
+
+  :global(.item-price) {
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    font-weight: 500;
+    color: var(--color-text-secondary); /* Light grey */
+    margin-bottom: 10px; /* 8-12px vertical spacing */
+    line-height: 1.2;
+    display: block;
+  }
+
+  :global(.item-qty-container) {
+    margin-bottom: 10px; /* 8-12px vertical spacing */
+  }
+
+  /* Boxed monochrome quantity selector */
+  :global(.drawer-quantity-selector) {
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--color-border);
+    width: fit-content;
+    background-color: transparent;
+    height: 38px;
+  }
+
+  :global(.drawer-qty-btn) {
+    background: transparent;
+    border: none;
+    color: #ffffff !important; /* Pure white */
+    width: 44px; /* Increased from 38px for horizontal spacing spacing */
+    height: 100%;
+    cursor: pointer !important; /* Cursor pointer */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: var(--font-sans);
+    font-size: 20px !important; /* Increased font-size to 20px */
+    font-weight: 600 !important; /* Font-weight 600 */
+    opacity: 1 !important; /* Opacity 100% */
+    transition: background-color 0.2s;
+    padding: 0;
+  }
+
+  :global(.drawer-qty-btn):hover {
+    background-color: rgba(255, 255, 255, 0.08);
+  }
+
+  :global(.drawer-qty-val) {
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    color: #ffffff; /* Pure white */
+    width: 52px; /* Increased from 38px for horizontal spacing spacing */
+    text-align: center;
+    border-left: 1px solid var(--color-border);
+    border-right: 1px solid var(--color-border);
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  :global(.remove-item-btn) {
+    align-self: flex-start;
+    font-family: var(--font-sans);
+    font-size: 0.65rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.65) !important; /* Light grey text style */
+    text-decoration: underline;
+    cursor: pointer !important; /* Pointer cursor */
+    padding: 0;
+    transition: color 0.2s ease;
+  }
+
+  :global(.remove-item-btn):hover {
+    color: #ffffff !important; /* White hover */
+  }
+
+  /* Refined Checkout Section */
+  .drawer-footer {
+    padding: 1.5rem 2rem;
+    border-top: 1px solid var(--color-border);
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    background-color: var(--color-bg);
+    align-items: center; /* Centering checkout section */
+  }
+
+  .drawer-footer.hidden {
+    display: none;
+  }
+
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    width: 90%; /* Center alignment width */
+  }
+
+  .checkout-button {
+    width: 90%; /* Reduced width */
+    max-width: 320px; /* Constrain max-width for editorial layout */
+    background-color: var(--color-button-bg); /* Solid White */
+    color: var(--color-button-text); /* Solid Dark */
+    padding: 0.9rem; /* Reduced height by 15-20% */
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-align: center;
+    transition: opacity 0.2s ease;
+    border: none;
+    cursor: pointer;
+  }
+
+  .checkout-button:hover {
+    opacity: 0.9;
+  }
+
+  @media (max-width: 767px) {
+    .cart-drawer {
+      width: 100vw;
+    }
+  }
+</style>
+
+<script>
+  const overlay = document.getElementById('cart-drawer-overlay');
+  const closeBtn = document.getElementById('cart-close-trigger');
+  const itemsContainer = document.getElementById('cart-items-container');
+  const footerContainer = document.getElementById('cart-footer');
+  const subtotalVal = document.getElementById('cart-subtotal-val');
+  const checkoutBtn = document.getElementById('cart-checkout-button');
+
+  function closeCart() {
+    if ((window as any).AQS_Cart) {
+      (window as any).AQS_Cart.closeCart();
+    }
+  }
+
+  if (overlay) overlay.addEventListener('click', closeCart);
+  if (closeBtn) closeBtn.addEventListener('click', closeCart);
+
+  function formatIDR(amount: number): string {
+    return 'IDR ' + amount.toLocaleString('id-ID').replace(/,/g, '.');
+  }
+
+  function bindItemEventListeners() {
+    if (!itemsContainer) return;
+
+    itemsContainer.querySelectorAll('.dec-qty').forEach(btn => {
+      btn.addEventListener('click', (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        const id = (ev.currentTarget as HTMLElement).getAttribute('data-id');
+        if (id && (window as any).AQS_Cart) {
+          const currentItems = (window as any).AQS_Cart.items || [];
+          const item = currentItems.find((i: any) => i.id === id);
+          if (item) {
+            (window as any).AQS_Cart.updateQuantity(id, item.quantity - 1);
+          }
+        }
+      });
+    });
+
+    itemsContainer.querySelectorAll('.inc-qty').forEach(btn => {
+      btn.addEventListener('click', (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        const id = (ev.currentTarget as HTMLElement).getAttribute('data-id');
+        if (id && (window as any).AQS_Cart) {
+          const currentItems = (window as any).AQS_Cart.items || [];
+          const item = currentItems.find((i: any) => i.id === id);
+          if (item) {
+            (window as any).AQS_Cart.updateQuantity(id, item.quantity + 1);
+          }
+        }
+      });
+    });
+
+    itemsContainer.querySelectorAll('.remove-item-btn').forEach(btn => {
+      btn.addEventListener('click', (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        const id = (ev.currentTarget as HTMLElement).getAttribute('data-id');
+        if (id && (window as any).AQS_Cart) {
+          (window as any).AQS_Cart.removeItem(id);
+        }
+      });
+    });
+  }
+
+  function updateCartUI(items: any[]) {
+    if (!itemsContainer || !footerContainer || !subtotalVal) return;
+
+    if (items.length === 0) {
+      itemsContainer.innerHTML = '<p class="empty-message">Your cart is currently empty.</p>';
+      footerContainer.classList.add('hidden');
+      return;
+    }
+
+    footerContainer.classList.remove('hidden');
+
+    // Get current item IDs in the DOM
+    const currentDomItems = Array.from(itemsContainer.querySelectorAll('.cart-item'));
+    const currentDomIds = currentDomItems.map(el => el.getAttribute('data-id'));
+    const newIds = items.map(item => item.id);
+
+    // Check if the list of items is structurally identical
+    const isSameStructure = currentDomIds.length === newIds.length && 
+                            currentDomIds.every((id, idx) => id === newIds[idx]);
+
+    if (isSameStructure) {
+      // Just update values in place (no DOM destruction, preserves focus and scroll position!)
+      items.forEach(item => {
+        const qtyVal = itemsContainer.querySelector(`.qty-val[data-id="${item.id}"]`);
+        if (qtyVal) {
+          qtyVal.textContent = item.quantity.toString();
+        }
+        const priceVal = itemsContainer.querySelector(`.cart-item[data-id="${item.id}"] .item-price`);
+        if (priceVal) {
+          priceVal.textContent = formatIDR(item.price);
+        }
+        const imgVal = itemsContainer.querySelector(`.cart-item[data-id="${item.id}"] .item-image`) as HTMLImageElement | null;
+        if (imgVal) {
+          const currentSrc = new URL(imgVal.src, window.location.origin).pathname;
+          const targetSrc = new URL(item.image, window.location.origin).pathname;
+          if (currentSrc !== targetSrc) {
+            imgVal.src = item.image;
+          }
+        }
+      });
+    } else {
+      // Re-render the structure (only happens on add/remove)
+      itemsContainer.innerHTML = items.map((item: any) => `
+        <div class="cart-item" data-id="${item.id}">
+          <img src="${item.image}" alt="${item.name}" class="item-image" />
+          <div class="item-details">
+            <span class="item-name">${item.name}</span>
+            <span class="item-price">${formatIDR(item.price)}</span>
+            <div class="item-qty-container">
+              <div class="drawer-quantity-selector">
+                <button type="button" class="drawer-qty-btn dec-qty" data-id="${item.id}" aria-label="Decrease quantity">−</button>
+                <span class="drawer-qty-val qty-val" data-id="${item.id}">${item.quantity}</span>
+                <button type="button" class="drawer-qty-btn inc-qty" data-id="${item.id}" aria-label="Increase quantity">+</button>
+              </div>
+            </div>
+            <button type="button" class="remove-item-btn" data-id="${item.id}">Remove</button>
+          </div>
+        </div>
+      `).join('');
+
+      // Re-bind event listeners for the new DOM elements
+      bindItemEventListeners();
+    }
+
+    // Always update subtotal
+    const subtotal = items.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0);
+    subtotalVal.textContent = formatIDR(subtotal);
+  }
+
+  window.addEventListener('aqs-cart-update', ((e: CustomEvent) => {
+    const items = e.detail?.items || [];
+    updateCartUI(items);
+  }) as EventListener);
+
+  // Initial load check
+  if ((window as any).AQS_Cart && (window as any).AQS_Cart.items) {
+    updateCartUI((window as any).AQS_Cart.items);
+  }
+
+  if (checkoutBtn) {
+    checkoutBtn.addEventListener('click', (ev) => {
+      ev.preventDefault();
+      window.location.href = '/checkout';
+    });
+  }
+</script>

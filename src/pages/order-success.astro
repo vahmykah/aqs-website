@@ -1,0 +1,561 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Order Received | A Quiet Space" noindex={true}>
+  <div class="success-wrapper">
+    <!-- Main Success Container -->
+    <div class="success-container">
+      <span class="received-status-dot" id="success-status-dot"></span>
+      <h1 class="success-title sentient-heading" id="success-title-text">ORDER RECEIVED.</h1>
+      <p class="success-subtitle satoshi-text" id="success-subtitle-text">Please complete your payment to continue processing your order.</p>
+
+      <!-- Dynamic Order Details Card -->
+      <div id="order-details-card" class="order-details-card hidden">
+        <h2 class="details-card-title sentient-heading">Order Details</h2>
+        
+        <div class="details-grid">
+          <div class="details-row">
+            <span class="detail-label">Order Number</span>
+            <span id="detail-order-id" class="detail-value text-highlight">AQS-00000</span>
+          </div>
+          <div class="details-row">
+            <span class="detail-label">Customer Name</span>
+            <span id="detail-customer-name" class="detail-value">John Doe</span>
+          </div>
+          <div class="details-row">
+            <span class="detail-label">Email Address</span>
+            <span id="detail-customer-email" class="detail-value">john@example.com</span>
+          </div>
+          <div class="details-row">
+            <span class="detail-label">Shipping Method</span>
+            <span id="detail-shipping-method" class="detail-value">JNE Regular</span>
+          </div>
+          <div class="details-row">
+            <span class="detail-label">Payment Method</span>
+            <span id="detail-payment-method" class="detail-value">QRIS</span>
+          </div>
+          <div class="details-row">
+            <span class="detail-label">Payment Status</span>
+            <span id="detail-payment-status" class="status-badge">Pending Payment</span>
+          </div>
+        </div>
+
+        <!-- Purchased items list -->
+        <div class="success-items-section">
+          <h3 class="items-section-title satoshi-text">Items Ordered</h3>
+          <div id="success-items-list" class="success-items-list">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- Total summary -->
+        <div class="success-total-row">
+          <span class="total-label">Total Payment</span>
+          <span id="detail-order-total" class="total-value">IDR 0</span>
+        </div>
+      </div>
+
+      <!-- Bottom Status Note -->
+      <p class="status-note satoshi-text">Your order details have been recorded successfully.</p>
+
+      <!-- Action Buttons Stack -->
+      <div class="success-actions">
+        <a href="/" class="btn-continue-shopping">CONTINUE SHOPPING</a>
+        <button type="button" id="btn-track-order" class="btn-track-order">TRACK ORDER</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Toast Notification -->
+  <div id="toast-notification" class="toast-notification hidden">
+    <div class="toast-content">
+      <svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+      </svg>
+      <span class="toast-message">Tracking details will be emailed once shipped.</span>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .success-wrapper {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 6rem 2rem 8rem 2rem;
+  }
+
+  .sentient-heading {
+    font-family: var(--font-serif);
+    font-weight: 400;
+  }
+
+  .satoshi-text {
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    color: var(--color-text-secondary);
+  }
+
+  .success-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .received-status-dot {
+    display: block;
+    width: 12px;
+    height: 12px;
+    background-color: var(--color-text-secondary);
+    border-radius: 50%;
+    margin-bottom: 2rem;
+    box-shadow: 0 0 15px rgba(161, 161, 161, 0.4);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .received-status-dot.status-paid {
+    background-color: #52c41a;
+    box-shadow: 0 0 15px rgba(82, 196, 26, 0.6);
+    animation: success-pulse 2s infinite ease-in-out;
+  }
+
+  .received-status-dot.status-pending {
+    background-color: #faad14;
+    box-shadow: 0 0 15px rgba(250, 173, 20, 0.6);
+    animation: success-pulse 2s infinite ease-in-out;
+  }
+
+  .received-status-dot.status-cancelled {
+    background-color: #f5222d;
+    box-shadow: 0 0 15px rgba(245, 34, 45, 0.6);
+  }
+
+  @keyframes success-pulse {
+    0%, 100% {
+      transform: scale(0.9);
+      opacity: 0.8;
+    }
+    50% {
+      transform: scale(1.1);
+      opacity: 1;
+    }
+  }
+
+  /* Status Badges */
+  .status-badge.status-paid {
+    background-color: rgba(82, 196, 26, 0.1) !important;
+    color: #52c41a !important;
+    border-color: rgba(82, 196, 26, 0.3) !important;
+  }
+
+  .status-badge.status-pending {
+    background-color: rgba(250, 173, 20, 0.1) !important;
+    color: #faad14 !important;
+    border-color: rgba(250, 173, 20, 0.3) !important;
+  }
+
+  .status-badge.status-cancelled {
+    background-color: rgba(245, 34, 45, 0.1) !important;
+    color: #f5222d !important;
+    border-color: rgba(245, 34, 45, 0.3) !important;
+  }
+
+  .success-title {
+    font-size: var(--text-xxl);
+    letter-spacing: 0.1em;
+    margin-bottom: 1rem;
+    color: var(--color-text-primary);
+  }
+
+  .success-subtitle {
+    font-size: var(--text-base);
+    max-width: 480px;
+    line-height: 1.5;
+    margin-bottom: 3.5rem;
+  }
+
+  /* Order details card */
+  .order-details-card {
+    width: 100%;
+    max-width: 520px;
+    background-color: rgba(255, 255, 255, 0.01);
+    border: 1px solid var(--color-border);
+    padding: 2.5rem;
+    margin-bottom: 2.5rem;
+    text-align: left;
+  }
+
+  .order-details-card.hidden {
+    display: none;
+  }
+
+  .details-card-title {
+    font-size: var(--text-base);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    color: var(--color-text-primary);
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 0.75rem;
+  }
+
+  .details-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 1.5rem;
+  }
+
+  .details-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .detail-label {
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-secondary);
+  }
+
+  .detail-value {
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    color: var(--color-text-primary);
+    font-weight: 500;
+  }
+
+  .detail-value.text-highlight {
+    font-weight: 700;
+    letter-spacing: 0.05em;
+  }
+
+  .status-badge {
+    display: inline-block;
+    padding: 0.35rem 0.75rem;
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background-color: #242424;
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-border);
+  }
+
+  /* Items ordered section */
+  .success-items-section {
+    padding: 1.5rem 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .items-section-title {
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 1rem;
+    font-size: var(--text-xs);
+  }
+
+  .success-items-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .success-item-row {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    color: var(--color-text-primary);
+  }
+
+  .success-item-qty {
+    color: var(--color-text-secondary);
+    margin-left: 0.5rem;
+  }
+
+  .success-total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 1.5rem;
+  }
+
+  .total-label {
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-primary);
+  }
+
+  .total-value {
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    font-weight: 700;
+    color: var(--color-text-primary);
+  }
+
+  .status-note {
+    font-size: var(--text-xs);
+    letter-spacing: 0.05em;
+    margin-bottom: 3.5rem;
+    max-width: 480px;
+    line-height: 1.5;
+  }
+
+  /* Actions buttons stack */
+  .success-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
+    max-width: 320px;
+  }
+
+  .btn-continue-shopping {
+    display: block;
+    width: 100%;
+    background-color: var(--color-button-bg);
+    color: var(--color-button-text);
+    padding: 1.1rem;
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-align: center;
+    transition: opacity 0.25s ease;
+  }
+
+  .btn-continue-shopping:hover {
+    opacity: 0.9;
+  }
+
+  .btn-track-order {
+    display: block;
+    width: 100%;
+    background-color: transparent;
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-border);
+    padding: 1.1rem;
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.25s ease, border-color 0.25s ease;
+  }
+
+  .btn-track-order:hover {
+    background-color: rgba(255, 255, 255, 0.02);
+    border-color: var(--color-text-primary);
+  }
+
+  /* Toast Notification */
+  .toast-notification {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background-color: #1a1a1a;
+    border: 1px solid var(--color-border);
+    padding: 1rem 1.5rem;
+    z-index: 100000;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .toast-notification.visible {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .toast-notification.hidden {
+    display: none;
+  }
+
+  .toast-content {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .toast-icon {
+    width: 16px;
+    height: 16px;
+    color: var(--color-text-primary);
+  }
+
+  .toast-message {
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    color: var(--color-text-primary);
+    font-weight: 500;
+    letter-spacing: 0.05em;
+  }
+</style>
+
+<script is:inline>
+  (function() {
+    var orderCard = document.getElementById('order-details-card');
+    var orderIdEl = document.getElementById('detail-order-id');
+    var nameEl = document.getElementById('detail-customer-name');
+    var emailEl = document.getElementById('detail-customer-email');
+    var shippingEl = document.getElementById('detail-shipping-method');
+    var paymentEl = document.getElementById('detail-payment-method');
+    var totalEl = document.getElementById('detail-order-total');
+    var statusEl = document.getElementById('detail-payment-status');
+    var itemsListEl = document.getElementById('success-items-list');
+
+    var statusDot = document.getElementById('success-status-dot');
+    var titleText = document.getElementById('success-title-text');
+    var subtitleText = document.getElementById('success-subtitle-text');
+
+    var trackBtn = document.getElementById('btn-track-order');
+    var toast = document.getElementById('toast-notification');
+    var toastTimeout;
+
+    function formatIDR(amount) {
+      if (typeof amount !== 'number') return 'IDR 0';
+      return 'IDR ' + amount.toLocaleString('id-ID').replace(/,/g, '.');
+    }
+
+    // 1. Fetch pending order details from storage
+    var storedOrder = localStorage.getItem('aqs_pending_order');
+    if (storedOrder) {
+      try {
+        var order = JSON.parse(storedOrder);
+        
+        // Data reconciliation for pending order
+        var PRODUCT_CATALOG = {
+          'soe-bag-1': 305000,
+          'soe-bag-2': 285000
+        };
+        if (order && order.items) {
+          var changed = false;
+          var newSubtotal = 0;
+          for (var i = 0; i < order.items.length; i++) {
+            var it = order.items[i];
+            var correctPrice = PRODUCT_CATALOG[it.id];
+            if (correctPrice && it.price !== correctPrice) {
+              it.price = correctPrice;
+              changed = true;
+            }
+            newSubtotal += (it.price * it.quantity);
+          }
+          if (changed) {
+            order.orderTotal = newSubtotal + (order.shippingCost || 0);
+            localStorage.setItem('aqs_pending_order', JSON.stringify(order));
+          }
+        }
+
+        if (order && order.orderId) {
+          // Display the card
+          if (orderCard) orderCard.classList.remove('hidden');
+
+          // Populates elements
+          if (orderIdEl) orderIdEl.textContent = order.orderId;
+          
+          // Access fields safely across new structured schema and old flat schema
+          var customerName = (order.customer && order.customer.name) ? order.customer.name : (order.customerName || '');
+          var customerEmail = (order.customer && order.customer.email) ? order.customer.email : (order.customerEmail || '');
+
+          if (nameEl) nameEl.textContent = customerName;
+          if (emailEl) emailEl.textContent = customerEmail;
+          if (shippingEl) shippingEl.textContent = order.shippingMethod || '';
+          if (paymentEl) paymentEl.textContent = order.paymentMethod || '';
+          if (totalEl) totalEl.textContent = formatIDR(order.orderTotal);
+
+          // Update dynamic status UI elements
+          var status = order.paymentStatus || 'Pending Payment';
+          
+          if (statusDot) {
+            statusDot.className = 'received-status-dot';
+          }
+          if (statusEl) {
+            statusEl.className = 'status-badge';
+            statusEl.textContent = status;
+          }
+
+          if (status === 'Paid') {
+            if (statusDot) statusDot.classList.add('status-paid');
+            if (statusEl) statusEl.classList.add('status-paid');
+            if (titleText) titleText.textContent = 'ORDER CONFIRMED.';
+            if (subtitleText) subtitleText.textContent = 'Your payment has been verified. We are processing your order.';
+            
+            // Clear cart from local storage on successful payment confirmation
+            localStorage.removeItem('aqs_cart');
+            window.dispatchEvent(new CustomEvent('aqs-cart-update', {
+              detail: { items: [], count: 0 }
+            }));
+            console.log('[Cart System] Cart cleared from storage upon payment verification.');
+          } else if (status === 'Cancelled') {
+            if (statusDot) statusDot.classList.add('status-cancelled');
+            if (statusEl) statusEl.classList.add('status-cancelled');
+            if (titleText) titleText.textContent = 'ORDER CANCELLED.';
+            if (subtitleText) subtitleText.textContent = 'The transaction was cancelled or expired. You can return to checkout to try again.';
+          } else {
+            // Pending Payment / Awaiting Payment
+            if (statusDot) statusDot.classList.add('status-pending');
+            if (statusEl) statusEl.classList.add('status-pending');
+            if (titleText) titleText.textContent = 'ORDER RECEIVED.';
+            if (subtitleText) subtitleText.textContent = 'Please complete your payment to continue processing your order.';
+          }
+
+          // Populate items list
+          if (itemsListEl && order.items && order.items.length) {
+            var itemsHtml = '';
+            for (var i = 0; i < order.items.length; i++) {
+              var it = order.items[i];
+              itemsHtml += '<div class="success-item-row">' +
+                '<span>' + it.name + ' <span class="success-item-qty">× ' + it.quantity + '</span></span>' +
+                '<span>' + formatIDR(it.price * it.quantity) + '</span>' +
+              '</div>';
+            }
+            itemsListEl.innerHTML = itemsHtml;
+          }
+        }
+      } catch (e) {
+        console.error('Failed to parse aqs_pending_order:', e);
+      }
+    }
+
+    // 2. Track Order button click (toast trigger)
+    if (trackBtn && toast) {
+      trackBtn.addEventListener('click', function(ev) {
+        ev.preventDefault();
+
+        // Clear any active timeouts
+        if (toastTimeout) {
+          clearTimeout(toastTimeout);
+        }
+
+        // Show toast
+        toast.classList.remove('hidden');
+        // Force reflow
+        void toast.offsetWidth;
+        toast.classList.add('visible');
+
+        // Hide after 3.5s
+        toastTimeout = setTimeout(function() {
+          toast.classList.remove('visible');
+          setTimeout(function() {
+            toast.classList.add('hidden');
+          }, 300);
+        }, 3500);
+      });
+    }
+  })();
+</script>

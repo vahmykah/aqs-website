@@ -1,0 +1,176 @@
+---
+---
+
+<div id="info-drawer-overlay" class="drawer-overlay" aria-hidden="true"></div>
+
+<aside id="info-drawer" class="info-drawer" aria-label="Brand Information">
+  <div class="drawer-header">
+    <div class="drawer-brand-identity">
+      <img src="/images/logo.png" alt="A Quiet Space Logo" class="drawer-logo" />
+      <h2 class="drawer-title">INFO</h2>
+    </div>
+    <button id="info-close-trigger" class="close-button" aria-label="Close Brand Information">CLOSE</button>
+  </div>
+
+  <div class="drawer-content">
+    <div class="info-section">
+      <h3 class="info-heading">Shipping</h3>
+      <p class="info-text">
+        All shipments originate from Jakarta, Indonesia. Orders are processed within 1–2 business days. Regular shipping takes 2–4 business days nationwide.
+      </p>
+    </div>
+
+    <div class="info-section">
+      <h3 class="info-heading">Returns</h3>
+      <p class="info-text">
+        We offer a 7-day return policy for unused, unwashed items in their original packaging. Return shipping is at the buyer's expense unless the item arrives defective.
+      </p>
+    </div>
+
+    <div class="info-section">
+      <h3 class="info-heading">Product Care</h3>
+      <p class="info-text">
+        To maintain the structure and finish of the premium canvas, spot clean only with a damp, soft cloth. Do not machine wash or dry clean. Keep hardware dry.
+      </p>
+    </div>
+
+    <div class="info-section">
+      <h3 class="info-heading">Contact</h3>
+      <p class="info-text">
+        Email: info@aquietspace.id<br />
+        WhatsApp Support: +62 852 8615 2632
+      </p>
+    </div>
+  </div>
+</aside>
+
+<style>
+  .drawer-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5); /* Dimmed backdrop overlay */
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* When info open, dim overlay */
+  :global(body.info-open) .drawer-overlay {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .info-drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 400px;
+    height: 100vh;
+    background-color: var(--color-bg);
+    border-left: 1px solid var(--color-border);
+    z-index: 1001;
+    transform: translateX(100%);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    flex-direction: column;
+  }
+
+  :global(body.info-open) .info-drawer {
+    transform: translateX(0);
+  }
+
+  .drawer-header {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid var(--color-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .drawer-brand-identity {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem; /* Spacing between crescent/brand logo and title */
+  }
+
+  .drawer-logo {
+    display: block;
+    height: 24px;
+    width: auto;
+    object-fit: contain;
+  }
+
+  .drawer-title {
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    font-weight: 700;
+    letter-spacing: 0.15em;
+  }
+
+  .close-button {
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    color: var(--color-text-secondary);
+  }
+
+  .close-button:hover {
+    color: var(--color-text-primary);
+  }
+
+  .drawer-content {
+    flex-grow: 1;
+    padding: 2rem 2.5rem;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+  }
+
+  .info-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .info-heading {
+    font-family: var(--font-serif);
+    font-size: var(--text-base);
+    font-weight: 400;
+    letter-spacing: 0.05em;
+    color: var(--color-text-primary);
+  }
+
+  .info-text {
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    line-height: 1.6;
+    color: var(--color-text-secondary);
+  }
+
+  @media (max-width: 767px) {
+    .info-drawer {
+      width: 100vw;
+    }
+  }
+</style>
+
+<script>
+  const overlay = document.getElementById('info-drawer-overlay');
+  const closeBtn = document.getElementById('info-close-trigger');
+
+  function closeInfo() {
+    if ((window as any).AQS_Cart) {
+      (window as any).AQS_Cart.closeInfo();
+    }
+  }
+
+  if (overlay) overlay.addEventListener('click', closeInfo);
+  if (closeBtn) closeBtn.addEventListener('click', closeInfo);
+</script>

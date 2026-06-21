@@ -1,0 +1,1246 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Checkout | A Quiet Space" noindex={true}>
+  <div class="checkout-wrapper">
+    <!-- Redirect Message for Empty Cart -->
+    <div id="checkout-empty-state" class="checkout-empty-state hidden">
+      <h2 class="sentient-heading">Your cart is currently empty.</h2>
+      <p class="satoshi-text">Redirecting you to the homepage in a few seconds...</p>
+    </div>
+
+    <!-- Main Checkout Grid -->
+    <form id="checkout-form" class="checkout-grid">
+      <!-- Left Side: Information Form -->
+      <div class="checkout-main-col">
+        <h1 class="checkout-title sentient-heading">CHECKOUT</h1>
+
+        <!-- Customer Information Section -->
+        <section class="checkout-section">
+          <h2 class="section-title sentient-heading">Customer Information</h2>
+          <div class="form-group">
+            <label for="customerName" class="form-label">Full Name</label>
+            <input type="text" id="customerName" name="customerName" required placeholder="John Doe" class="form-input" />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="customerEmail" class="form-label">Email Address</label>
+              <input type="email" id="customerEmail" name="customerEmail" required placeholder="john@example.com" class="form-input" />
+            </div>
+            <div class="form-group">
+              <label for="customerPhone" class="form-label">Phone Number</label>
+              <input type="tel" id="customerPhone" name="customerPhone" required placeholder="+62 812 3456 7890" class="form-input" />
+            </div>
+          </div>
+        </section>
+
+        <!-- Shipping Address Section -->
+        <section class="checkout-section">
+          <h2 class="section-title sentient-heading">Shipping Address</h2>
+          <div class="form-row">
+            <div class="form-group autocomplete-wrapper">
+              <label for="province" class="form-label">Province</label>
+              <input type="text" id="province" name="province" required placeholder="DKI Jakarta" class="form-input" autocomplete="off" />
+              <div id="province-suggestions" class="autocomplete-suggestions hidden"></div>
+            </div>
+            <div class="form-group autocomplete-wrapper">
+              <label for="city" class="form-label">City / Regency</label>
+              <input type="text" id="city" name="city" required placeholder="South Jakarta" class="form-input" autocomplete="off" />
+              <div id="city-suggestions" class="autocomplete-suggestions hidden"></div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group autocomplete-wrapper">
+              <label for="district" class="form-label">District</label>
+              <input type="text" id="district" name="district" required placeholder="Kebayoran Baru" class="form-input" autocomplete="off" />
+              <div id="district-suggestions" class="autocomplete-suggestions hidden"></div>
+            </div>
+            <div class="form-group">
+              <label for="postalCode" class="form-label">Postal Code</label>
+              <input type="text" id="postalCode" name="postalCode" required placeholder="12110" class="form-input" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="address" class="form-label">Full Address</label>
+            <textarea id="address" name="address" required placeholder="Apartment, suite, unit, building, street address, etc." rows="3" class="form-textarea"></textarea>
+          </div>
+        </section>
+      </div>
+
+      <!-- Right Side: Order Summary & Payment -->
+      <aside class="checkout-sidebar">
+        <!-- Order Summary Card -->
+        <div class="summary-card">
+          <h2 class="sidebar-title sentient-heading">Order Summary</h2>
+          
+          <!-- Dynamic Items List -->
+          <div id="checkout-items-list" class="checkout-items-list">
+            <!-- Rendered via JS -->
+          </div>
+
+          <!-- Price Summary Lines -->
+          <div class="price-summary-lines">
+            <div class="summary-line">
+              <span class="line-label">Subtotal</span>
+              <span id="summary-subtotal" class="line-value">IDR 0</span>
+            </div>
+            <div class="summary-line">
+              <span class="line-label">Shipping Cost</span>
+              <span id="summary-shipping" class="line-value">IDR 0</span>
+            </div>
+            <div class="summary-line total-line">
+              <span class="line-label">Total Payment</span>
+              <span id="summary-total" class="line-value">IDR 0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Shipping Method Selector -->
+        <div class="summary-card" id="shipping-method-card">
+          <h2 class="sidebar-title sentient-heading">Shipping Method</h2>
+          <p id="shipping-placeholder-msg" class="shipping-helper-msg satoshi-text">Please complete your shipping address to view available couriers and rates.</p>
+          <div id="shipping-fallback-notice" class="shipping-fallback-notice satoshi-text hidden">
+            ⚠️ Connection to shipping servers offline. A temporary flat-rate shipping fee of IDR 20.000 has been applied.
+          </div>
+          <div id="shipping-methods-container" class="hidden">
+            <div class="shipping-options-stack">
+              <!-- JNE Regular -->
+              <label class="custom-radio-option checked">
+                <input type="radio" id="shipping-jne" name="shippingMethod" value="JNE Regular" data-cost="0" data-estimate="" checked />
+                <div class="option-details">
+                  <div class="option-header">
+                    <span class="option-name">JNE Regular</span>
+                    <span class="option-fee" id="fee-jne">—</span>
+                  </div>
+                  <span class="option-estimate" id="estimate-jne"></span>
+                </div>
+              </label>
+
+              <!-- J&T Regular -->
+              <label class="custom-radio-option">
+                <input type="radio" id="shipping-jnt" name="shippingMethod" value="J&T Regular" data-cost="0" data-estimate="" />
+                <div class="option-details">
+                  <div class="option-header">
+                    <span class="option-name">J&T Regular</span>
+                    <span class="option-fee" id="fee-jnt">—</span>
+                  </div>
+                  <span class="option-estimate" id="estimate-jnt"></span>
+                </div>
+              </label>
+
+              <!-- SiCepat Regular -->
+              <label class="custom-radio-option">
+                <input type="radio" id="shipping-sicepat" name="shippingMethod" value="SiCepat Regular" data-cost="0" data-estimate="" />
+                <div class="option-details">
+                  <div class="option-header">
+                    <span class="option-name">SiCepat Regular</span>
+                    <span class="option-fee" id="fee-sicepat">—</span>
+                  </div>
+                  <span class="option-estimate" id="estimate-sicepat"></span>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment Selection -->
+        <div class="summary-card">
+          <h2 class="sidebar-title sentient-heading">Payment Method</h2>
+          <div class="payment-options-stack">
+            <!-- QRIS -->
+            <label class="custom-radio-option checked">
+              <input type="radio" name="paymentMethod" value="QRIS" checked />
+              <div class="option-details">
+                <span class="option-name">QRIS</span>
+                <span class="option-subtitle">Pay instantly using any bank or e-wallet QR scanner</span>
+              </div>
+            </label>
+
+            <!-- Virtual Account -->
+            <label class="custom-radio-option">
+              <input type="radio" name="paymentMethod" value="Virtual Account" />
+              <div class="option-details">
+                <span class="option-name">Virtual Account</span>
+                <span class="option-subtitle">Bank transfer via BCA, Mandiri, BNI, or BRI</span>
+              </div>
+            </label>
+
+            <!-- E-Wallet -->
+            <label class="custom-radio-option">
+              <input type="radio" name="paymentMethod" value="E-Wallet" />
+              <div class="option-details">
+                <span class="option-name">E-Wallet</span>
+                <span class="option-subtitle">Pay via GoPay, OVO, ShopeePay, or Dana</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" id="place-order-btn" class="place-order-btn">
+          PLACE ORDER
+        </button>
+        <div class="secure-checkout-indicator">
+          <p class="secure-checkout-title">🔒 Secure Checkout</p>
+          <p class="secure-checkout-desc">Your payment information is encrypted and securely processed.</p>
+        </div>
+      </aside>
+    </form>
+  </div>
+</Layout>
+
+<style>
+  .checkout-wrapper {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 3rem 2rem 6rem 2rem;
+  }
+
+  .sentient-heading {
+    font-family: var(--font-serif);
+    font-weight: 400;
+  }
+
+  .satoshi-text {
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    color: var(--color-text-secondary);
+  }
+
+  .checkout-empty-state {
+    text-align: center;
+    padding: 8rem 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  .checkout-empty-state.hidden {
+    display: none;
+  }
+
+  .checkout-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 3.5rem;
+    align-items: start;
+  }
+
+  @media (min-width: 992px) {
+    .checkout-grid {
+      grid-template-columns: 1.1fr 1fr; /* Left side ~52%, Right side ~48% approx */
+    }
+  }
+
+  .checkout-title {
+    font-size: var(--text-xxl);
+    letter-spacing: 0.05em;
+    margin-bottom: 2.5rem;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 1.5rem;
+  }
+
+  .checkout-section {
+    margin-bottom: 3.5rem;
+  }
+
+  .section-title {
+    font-size: var(--text-lg);
+    letter-spacing: 0.05em;
+    margin-bottom: 1.75rem;
+    color: var(--color-text-primary);
+  }
+
+  .form-group {
+    margin-bottom: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  @media (min-width: 576px) {
+    .form-row {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .form-label {
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-text-secondary);
+    font-weight: 500;
+  }
+
+  .form-input, .form-textarea {
+    background-color: transparent;
+    border: 1px solid var(--color-border);
+    color: var(--color-text-primary);
+    padding: 0.9rem;
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    width: 100%;
+    transition: border-color 0.25s ease, background-color 0.25s ease;
+  }
+
+  .form-input:focus, .form-textarea:focus {
+    outline: none;
+    border-color: var(--color-text-primary);
+    background-color: rgba(255, 255, 255, 0.02);
+  }
+
+  .form-textarea {
+    resize: vertical;
+  }
+
+  /* Autocomplete Destination suggestions */
+  .autocomplete-wrapper {
+    position: relative;
+  }
+
+  .autocomplete-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 9999;
+    background-color: rgba(18, 18, 18, 0.98);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--color-border);
+    max-height: 180px;
+    overflow-y: auto;
+    margin-top: 4px;
+    padding: 0.25rem 0;
+    border-radius: 0;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  }
+
+  .autocomplete-suggestions.hidden {
+    display: none;
+  }
+
+  .autocomplete-suggestion-item {
+    padding: 0.75rem 1rem;
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+    transition: background-color 0.2s ease, color 0.2s ease;
+    text-align: left;
+  }
+
+  .autocomplete-suggestion-item:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: var(--color-text-primary);
+  }
+
+  .autocomplete-suggestion-item:last-child {
+    border-bottom: none;
+  }
+
+  #shipping-methods-container.hidden {
+    display: none;
+  }
+
+  .shipping-fallback-notice {
+    background-color: rgba(250, 173, 20, 0.05);
+    border: 1px solid rgba(250, 173, 20, 0.15);
+    color: #faad14;
+    padding: 0.8rem 1rem;
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    margin-bottom: 1rem;
+    line-height: 1.5;
+    text-align: left;
+  }
+
+  .shipping-fallback-notice.hidden {
+    display: none;
+  }
+
+  /* Right Side styling */
+  .checkout-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem; /* Reduced by ~15% */
+  }
+
+  @media (min-width: 992px) {
+    .checkout-sidebar {
+      position: sticky;
+      top: 120px;
+      align-self: start;
+    }
+  }
+
+  .summary-card {
+    background-color: rgba(255, 255, 255, 0.01);
+    border: 1px solid var(--color-border);
+    padding: 0.95rem; /* Reduced by ~15% */
+  }
+
+  .shipping-helper-msg {
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    color: var(--color-text-secondary);
+    margin-top: -0.25rem;
+    margin-bottom: 0.75rem;
+    line-height: 1.4;
+    display: block;
+  }
+
+  .sidebar-title {
+    font-size: var(--text-base);
+    letter-spacing: 0.08em;
+    margin-bottom: 1.25rem;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 0.65rem;
+  }
+
+  /* Summary Product list */
+  .checkout-items-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 1rem;
+  }
+
+  /* Scoped items */
+  :global(.summary-item) {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  :global(.summary-item-image) {
+    width: 44px;
+    height: 55px;
+    object-fit: cover;
+    background-color: #242424;
+    border: 1px solid var(--color-border);
+  }
+
+  :global(.summary-item-details) {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  :global(.summary-item-name) {
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-text-primary);
+  }
+
+  :global(.summary-item-meta) {
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    color: var(--color-text-secondary);
+  }
+
+  :global(.summary-item-price) {
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    font-weight: 500;
+    color: var(--color-text-primary);
+    margin-left: auto;
+  }
+
+  /* Price calculations lines */
+  .price-summary-lines {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .summary-line {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    color: var(--color-text-secondary);
+  }
+
+  .summary-line.total-line {
+    margin-top: 0.75rem;
+    border-top: 1px solid var(--color-border);
+    padding-top: 0.75rem;
+    color: var(--color-text-primary);
+    font-weight: 700;
+    font-size: var(--text-base);
+  }
+
+  /* Radio Option Cards */
+  .shipping-options-stack, .payment-options-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .custom-radio-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    border: 1px solid var(--color-border);
+    padding: 0.85rem;
+    cursor: pointer;
+    transition: border-color 0.25s ease, background-color 0.25s ease;
+  }
+
+  .custom-radio-option:hover {
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+
+  .custom-radio-option.checked {
+    border-color: var(--color-text-primary);
+    background-color: rgba(255, 255, 255, 0.02);
+  }
+
+  .custom-radio-option input[type="radio"] {
+    margin-top: 0.25rem;
+    accent-color: #ffffff;
+    cursor: pointer;
+  }
+
+  .option-details {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .option-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .option-name {
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    font-weight: 700;
+    color: var(--color-text-primary);
+  }
+
+  .option-fee {
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--color-text-primary);
+  }
+
+  .option-estimate {
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    color: var(--color-text-secondary);
+  }
+
+  .option-subtitle {
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    color: var(--color-text-secondary);
+    line-height: 1.4;
+  }
+
+  /* Place Order Action */
+  .place-order-btn {
+    width: 100%;
+    background-color: var(--color-button-bg);
+    color: var(--color-button-text);
+    padding: 0.85rem; /* Reduced by ~10% */
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-align: center;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.25s ease;
+  }
+
+  .place-order-btn:hover {
+    opacity: 0.9;
+  }
+
+  /* Secure Checkout Trust Indicator */
+  .secure-checkout-indicator {
+    text-align: center;
+    margin-top: 0.5rem; /* Reduced by ~15% */
+  }
+
+  .secure-checkout-title {
+    font-family: var(--font-sans);
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-text-secondary);
+    margin: 0 0 0.3rem 0;
+    opacity: 0.7;
+  }
+
+  .secure-checkout-desc {
+    font-family: var(--font-sans);
+    font-size: 0.65rem;
+    color: var(--color-text-secondary);
+    opacity: 0.5;
+    margin: 0;
+    line-height: 1.4;
+</style>
+
+<script>
+  import { MOCK_DESTINATIONS } from '../lib/shipping';
+
+  (function() {
+    var checkoutForm = document.getElementById('checkout-form');
+    var emptyState = document.getElementById('checkout-empty-state');
+    var itemsListEl = document.getElementById('checkout-items-list');
+
+    var subtotalEl = document.getElementById('summary-subtotal');
+    var shippingEl = document.getElementById('summary-shipping');
+    var totalEl = document.getElementById('summary-total');
+
+    var cartItems = [];
+    var subtotal = 0;
+    var currentShippingCost = 0;
+    var selectedShippingMethod = 'JNE Regular';
+
+    var selectedDestination = null;
+
+    function formatIDR(amount) {
+      return 'IDR ' + amount.toLocaleString('id-ID').replace(/,/g, '.');
+    }
+
+    // 1. Load active cart items
+    function loadCartData() {
+      var stored = localStorage.getItem('aqs_cart');
+      if (stored) {
+        try {
+          cartItems = JSON.parse(stored) || [];
+        } catch (e) {
+          cartItems = [];
+        }
+      }
+
+      if (cartItems.length === 0) {
+        if (checkoutForm) checkoutForm.style.display = 'none';
+        if (emptyState) emptyState.classList.remove('hidden');
+        setTimeout(function() {
+          window.location.href = '/';
+        }, 3000);
+        return;
+      }
+
+      subtotal = 0;
+      for (var i = 0; i < cartItems.length; i++) {
+        subtotal += (cartItems[i].price * cartItems[i].quantity);
+      }
+
+      renderSummary();
+    }
+
+    // 2. Render Order Summary Details
+    function renderSummary() {
+      if (!itemsListEl) return;
+
+      var html = '';
+      for (var i = 0; i < cartItems.length; i++) {
+        var item = cartItems[i];
+        html += '<div class="summary-item">' +
+          '<img src="' + item.image + '" alt="' + item.name + '" class="summary-item-image" />' +
+          '<div class="summary-item-details">' +
+            '<span class="summary-item-name">' + item.name + '</span>' +
+            '<span class="summary-item-meta">Qty: ' + item.quantity + '</span>' +
+          '</div>' +
+          '<span class="summary-item-price">' + formatIDR(item.price * item.quantity) + '</span>' +
+        '</div>';
+      }
+      itemsListEl.innerHTML = html;
+
+      updateTotals();
+    }
+
+    // 3. Update total payment figures
+    function updateTotals() {
+      if (subtotalEl) subtotalEl.textContent = formatIDR(subtotal);
+      if (shippingEl) {
+        if (currentShippingCost === 0) {
+          shippingEl.textContent = '—';
+          shippingEl.style.fontSize = 'var(--text-sm)';
+          shippingEl.style.color = 'var(--color-text-secondary)';
+        } else {
+          shippingEl.textContent = formatIDR(currentShippingCost);
+          shippingEl.style.fontSize = 'var(--text-sm)';
+          shippingEl.style.color = 'var(--color-text-primary)';
+        }
+      }
+      if (totalEl) {
+        totalEl.textContent = formatIDR(subtotal + currentShippingCost);
+      }
+    }
+
+    // Autocomplete elements
+    var provinceInput = document.getElementById('province');
+    var cityInput = document.getElementById('city');
+    var districtInput = document.getElementById('district');
+    var postalCodeInput = document.getElementById('postalCode');
+
+    var provinceSg = document.getElementById('province-suggestions');
+    var citySg = document.getElementById('city-suggestions');
+    var districtSg = document.getElementById('district-suggestions');
+
+    var shippingPlaceholderMsg = document.getElementById('shipping-placeholder-msg');
+    var shippingMethodsContainer = document.getElementById('shipping-methods-container');
+
+    // Initially disable City & District, clear all values on load to prevent stale autocomplete or autofill values
+    if (provinceInput) provinceInput.value = '';
+    if (cityInput) {
+      cityInput.value = '';
+      cityInput.disabled = true;
+    }
+    if (districtInput) {
+      districtInput.value = '';
+      districtInput.disabled = true;
+    }
+    if (postalCodeInput) {
+      postalCodeInput.value = '';
+      postalCodeInput.readOnly = true;
+    }
+
+    // Helper: close all suggestions
+    function closeAllSuggestions() {
+      if (provinceSg) provinceSg.classList.add('hidden');
+      if (citySg) citySg.classList.add('hidden');
+      if (districtSg) districtSg.classList.add('hidden');
+    }
+
+    // Close when click outside
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.autocomplete-wrapper')) {
+        closeAllSuggestions();
+      }
+    });
+
+    // Close suggestions on blur (delayed to allow clicks)
+    function addBlurListener(input, suggestionBox) {
+      input.addEventListener('blur', function() {
+        setTimeout(function() {
+          if (suggestionBox) suggestionBox.classList.add('hidden');
+        }, 200);
+      });
+    }
+
+    if (provinceInput) addBlurListener(provinceInput, provinceSg);
+    if (cityInput) addBlurListener(cityInput, citySg);
+    if (districtInput) addBlurListener(districtInput, districtSg);
+
+    // Cascading address handlers
+    function onProvinceChange() {
+      // Clear dependent fields immediately
+      if (cityInput) {
+        cityInput.value = '';
+        cityInput.disabled = true;
+      }
+      if (districtInput) {
+        districtInput.value = '';
+        districtInput.disabled = true;
+      }
+      if (postalCodeInput) {
+        postalCodeInput.value = '';
+      }
+      selectedDestination = null;
+      resetShippingRates();
+
+      var val = provinceInput.value.trim().toLowerCase();
+      var match = false;
+      
+      for (var i = 0; i < MOCK_DESTINATIONS.length; i++) {
+        if (MOCK_DESTINATIONS[i].province.toLowerCase() === val) {
+          match = true;
+          // Set to canonical casing if they type exactly
+          if (provinceInput.value !== MOCK_DESTINATIONS[i].province) {
+            provinceInput.value = MOCK_DESTINATIONS[i].province;
+          }
+          break;
+        }
+      }
+
+      if (match) {
+        if (cityInput) cityInput.disabled = false;
+      }
+    }
+
+    function onCityChange() {
+      // Clear dependent fields immediately
+      if (districtInput) {
+        districtInput.value = '';
+        districtInput.disabled = true;
+      }
+      if (postalCodeInput) {
+        postalCodeInput.value = '';
+      }
+      selectedDestination = null;
+      resetShippingRates();
+
+      if (!provinceInput || !provinceInput.value) return;
+      var provVal = provinceInput.value.toLowerCase();
+      var cityVal = cityInput.value.trim().toLowerCase();
+      var match = false;
+
+      for (var i = 0; i < MOCK_DESTINATIONS.length; i++) {
+        var d = MOCK_DESTINATIONS[i];
+        if (d.province.toLowerCase() === provVal && d.city.toLowerCase() === cityVal) {
+          match = true;
+          if (cityInput.value !== d.city) {
+            cityInput.value = d.city;
+          }
+          break;
+        }
+      }
+
+      if (match) {
+        if (districtInput) districtInput.disabled = false;
+      }
+    }
+
+    function onDistrictChange() {
+      // Clear dependent fields immediately
+      if (postalCodeInput) {
+        postalCodeInput.value = '';
+      }
+      selectedDestination = null;
+      resetShippingRates();
+
+      if (!provinceInput || !provinceInput.value || !cityInput || !cityInput.value) return;
+      var provVal = provinceInput.value.toLowerCase();
+      var cityVal = cityInput.value.toLowerCase();
+      var distVal = districtInput.value.trim().toLowerCase();
+      var match = null;
+
+      for (var i = 0; i < MOCK_DESTINATIONS.length; i++) {
+        var d = MOCK_DESTINATIONS[i];
+        if (d.province.toLowerCase() === provVal && 
+            d.city.toLowerCase() === cityVal && 
+            d.district.toLowerCase() === distVal) {
+          match = d;
+          break;
+        }
+      }
+
+      if (match) {
+        if (districtInput.value !== match.district) {
+          districtInput.value = match.district;
+        }
+        if (postalCodeInput) postalCodeInput.value = match.postalCode;
+        selectedDestination = match;
+        calculateAndShowShipping();
+      }
+    }
+
+    // Province Autocomplete setup
+    if (provinceInput && provinceSg) {
+      provinceInput.addEventListener('focus', function() {
+        renderProvinceSuggestions(provinceInput.value);
+      });
+      provinceInput.addEventListener('input', function() {
+        renderProvinceSuggestions(provinceInput.value);
+        onProvinceChange();
+      });
+    }
+
+    function renderProvinceSuggestions(val) {
+      var query = val.toLowerCase().trim();
+      var provinces = [];
+      for (var i = 0; i < MOCK_DESTINATIONS.length; i++) {
+        var p = MOCK_DESTINATIONS[i].province;
+        if (provinces.indexOf(p) === -1) {
+          provinces.push(p);
+        }
+      }
+
+      var filtered = provinces.filter(function(p) {
+        return p.toLowerCase().includes(query);
+      });
+
+      if (filtered.length === 0) {
+        provinceSg.classList.add('hidden');
+        return;
+      }
+
+      var html = '';
+      for (var i = 0; i < filtered.length; i++) {
+        html += '<div class="autocomplete-suggestion-item" data-value="' + filtered[i] + '">' + filtered[i] + '</div>';
+      }
+      provinceSg.innerHTML = html;
+      provinceSg.classList.remove('hidden');
+
+      var items = provinceSg.querySelectorAll('.autocomplete-suggestion-item');
+      items.forEach(function(item) {
+        item.addEventListener('mousedown', function(e) {
+          e.preventDefault(); // Prevents blur event from firing before click is processed
+          var pVal = item.getAttribute('data-value');
+          provinceInput.value = pVal;
+          provinceSg.classList.add('hidden');
+          onProvinceChange();
+          if (cityInput) cityInput.focus();
+        });
+      });
+    }
+
+    // City Autocomplete setup
+    if (cityInput && citySg) {
+      cityInput.addEventListener('focus', function() {
+        renderCitySuggestions(cityInput.value);
+      });
+      cityInput.addEventListener('input', function() {
+        renderCitySuggestions(cityInput.value);
+        onCityChange();
+      });
+    }
+
+    function renderCitySuggestions(val) {
+      if (!provinceInput || !provinceInput.value) return;
+      var currentProvince = provinceInput.value;
+      var query = val.toLowerCase().trim();
+
+      var cities = [];
+      for (var i = 0; i < MOCK_DESTINATIONS.length; i++) {
+        var dest = MOCK_DESTINATIONS[i];
+        if (dest.province.toLowerCase() === currentProvince.toLowerCase()) {
+          if (cities.indexOf(dest.city) === -1) {
+            cities.push(dest.city);
+          }
+        }
+      }
+
+      var filtered = cities.filter(function(c) {
+        return c.toLowerCase().includes(query);
+      });
+
+      if (filtered.length === 0) {
+        citySg.classList.add('hidden');
+        return;
+      }
+
+      var html = '';
+      for (var i = 0; i < filtered.length; i++) {
+        html += '<div class="autocomplete-suggestion-item" data-value="' + filtered[i] + '">' + filtered[i] + '</div>';
+      }
+      citySg.innerHTML = html;
+      citySg.classList.remove('hidden');
+
+      var items = citySg.querySelectorAll('.autocomplete-suggestion-item');
+      items.forEach(function(item) {
+        item.addEventListener('mousedown', function(e) {
+          e.preventDefault();
+          var cVal = item.getAttribute('data-value');
+          cityInput.value = cVal;
+          citySg.classList.add('hidden');
+          onCityChange();
+          if (districtInput) districtInput.focus();
+        });
+      });
+    }
+
+    // District Autocomplete setup
+    if (districtInput && districtSg) {
+      districtInput.addEventListener('focus', function() {
+        renderDistrictSuggestions(districtInput.value);
+      });
+      districtInput.addEventListener('input', function() {
+        renderDistrictSuggestions(districtInput.value);
+        onDistrictChange();
+      });
+    }
+
+    function renderDistrictSuggestions(val) {
+      if (!provinceInput || !provinceInput.value || !cityInput || !cityInput.value) return;
+      var currentProvince = provinceInput.value;
+      var currentCity = cityInput.value;
+      var query = val.toLowerCase().trim();
+
+      var matches = MOCK_DESTINATIONS.filter(function(dest) {
+        return dest.province.toLowerCase() === currentProvince.toLowerCase() &&
+               dest.city.toLowerCase() === currentCity.toLowerCase() &&
+               dest.district.toLowerCase().includes(query);
+      });
+
+      if (matches.length === 0) {
+        districtSg.classList.add('hidden');
+        return;
+      }
+
+      var html = '';
+      for (var i = 0; i < matches.length; i++) {
+        html += '<div class="autocomplete-suggestion-item" data-id="' + matches[i].id + '" data-district="' + matches[i].district + '" data-postal="' + matches[i].postalCode + '">' + matches[i].district + '</div>';
+      }
+      districtSg.innerHTML = html;
+      districtSg.classList.remove('hidden');
+
+      var items = districtSg.querySelectorAll('.autocomplete-suggestion-item');
+      items.forEach(function(item) {
+        item.addEventListener('mousedown', function(e) {
+          e.preventDefault();
+          var dId = item.getAttribute('data-id');
+          var dVal = item.getAttribute('data-district');
+
+          districtInput.value = dVal;
+          districtSg.classList.add('hidden');
+
+          onDistrictChange();
+        });
+      });
+    }
+
+    // Dynamic Shipping Rates calculation simulator
+    function calculateAndShowShipping() {
+      if (!selectedDestination) return;
+
+      var fallbackNoticeEl = document.getElementById('shipping-fallback-notice');
+      if (shippingPlaceholderMsg) shippingPlaceholderMsg.style.display = 'none';
+      if (shippingMethodsContainer) shippingMethodsContainer.classList.remove('hidden');
+
+      var rates = {};
+      
+      try {
+        var triggerSimulatedFail = selectedDestination.district.toLowerCase().includes('fail') || 
+                                   window.location.search.includes('simulate_shipping_fail');
+        
+        if (triggerSimulatedFail) {
+          throw new Error("Shipping provider API timed out or rate limit reached.");
+        }
+
+        if (fallbackNoticeEl) fallbackNoticeEl.classList.add('hidden');
+
+        var province = selectedDestination.province;
+        var baseCost = 15000;
+        var javaEtd = "2–4 Business Days";
+        var outerEtd = "3–7 Business Days";
+
+        if (province === "DKI Jakarta") {
+          baseCost = 10000;
+          javaEtd = "1–2 Business Days";
+        } else if (province === "Jawa Barat" || province === "Jawa Tengah" || province === "Jawa Timur" || province === "Banten" || province === "DI Yogyakarta") {
+          baseCost = 18000;
+          javaEtd = "2–4 Business Days";
+        } else if (province === "Bali" || province === "Nusa Tenggara Barat" || province === "Nusa Tenggara Timur") {
+          baseCost = 28000;
+          outerEtd = "3–5 Business Days";
+        } else {
+          baseCost = 38000;
+          outerEtd = "4–7 Business Days";
+        }
+
+        rates = {
+          'JNE Regular': { cost: baseCost, etd: province.includes("Jakarta") || province.includes("Jawa") || province.includes("Banten") || province.includes("Yogyakarta") ? javaEtd : outerEtd },
+          'J&T Regular': { cost: baseCost + 3000, etd: province.includes("Jakarta") || province.includes("Jawa") || province.includes("Banten") || province.includes("Yogyakarta") ? javaEtd : outerEtd },
+          'SiCepat Regular': { cost: baseCost + 2000, etd: province.includes("Jakarta") || province.includes("Jawa") || province.includes("Banten") || province.includes("Yogyakarta") ? javaEtd : outerEtd }
+        };
+      } catch (e) {
+        console.warn('[Shipping API Fallback Triggered]:', e.message);
+        if (fallbackNoticeEl) fallbackNoticeEl.classList.remove('hidden');
+
+        var flatRateCost = 20000;
+        var fallbackEtd = "3–5 Business Days (Standard)";
+        
+        rates = {
+          'JNE Regular': { cost: flatRateCost, etd: fallbackEtd },
+          'J&T Regular': { cost: flatRateCost, etd: fallbackEtd },
+          'SiCepat Regular': { cost: flatRateCost, etd: fallbackEtd }
+        };
+      }
+
+      var jneRadio = document.getElementById('shipping-jne');
+      var jntRadio = document.getElementById('shipping-jnt');
+      var sicepatRadio = document.getElementById('shipping-sicepat');
+
+      if (jneRadio) {
+        jneRadio.setAttribute('data-cost', rates['JNE Regular'].cost);
+        jneRadio.setAttribute('data-estimate', rates['JNE Regular'].etd);
+        var feeEl = document.getElementById('fee-jne');
+        if (feeEl) feeEl.textContent = formatIDR(rates['JNE Regular'].cost);
+        var estEl = document.getElementById('estimate-jne');
+        if (estEl) estEl.textContent = 'Estimated: ' + rates['JNE Regular'].etd;
+      }
+      
+      if (jntRadio) {
+        jntRadio.setAttribute('data-cost', rates['J&T Regular'].cost);
+        jntRadio.setAttribute('data-estimate', rates['J&T Regular'].etd);
+        var feeEl = document.getElementById('fee-jnt');
+        if (feeEl) feeEl.textContent = formatIDR(rates['J&T Regular'].cost);
+        var estEl = document.getElementById('estimate-jnt');
+        if (estEl) estEl.textContent = 'Estimated: ' + rates['J&T Regular'].etd;
+      }
+
+      if (sicepatRadio) {
+        sicepatRadio.setAttribute('data-cost', rates['SiCepat Regular'].cost);
+        sicepatRadio.setAttribute('data-estimate', rates['SiCepat Regular'].etd);
+        var feeEl = document.getElementById('fee-sicepat');
+        if (feeEl) feeEl.textContent = formatIDR(rates['SiCepat Regular'].cost);
+        var estEl = document.getElementById('estimate-sicepat');
+        if (estEl) estEl.textContent = 'Estimated: ' + rates['SiCepat Regular'].etd;
+      }
+
+      var checkedRadio = document.querySelector('input[name="shippingMethod"]:checked');
+      if (!checkedRadio) {
+        if (jneRadio) {
+          jneRadio.checked = true;
+          jneRadio.closest('.custom-radio-option').classList.add('checked');
+          currentShippingCost = rates['JNE Regular'].cost;
+          selectedShippingMethod = 'JNE Regular';
+        }
+      } else {
+        currentShippingCost = parseInt(checkedRadio.getAttribute('data-cost') || '0', 10);
+        selectedShippingMethod = checkedRadio.value;
+      }
+
+      updateTotals();
+    }
+
+    function resetShippingRates() {
+      if (shippingPlaceholderMsg) shippingPlaceholderMsg.style.display = 'block';
+      if (shippingMethodsContainer) shippingMethodsContainer.classList.add('hidden');
+      currentShippingCost = 0;
+      updateTotals();
+    }
+
+    var shippingRadios = document.querySelectorAll('input[name="shippingMethod"]');
+    shippingRadios.forEach(function(radio) {
+      radio.addEventListener('change', function(e) {
+        shippingRadios.forEach(function(r) {
+          r.closest('.custom-radio-option').classList.remove('checked');
+        });
+        if (e.target.checked) {
+          e.target.closest('.custom-radio-option').classList.add('checked');
+          currentShippingCost = parseInt(e.target.getAttribute('data-cost') || '0', 10);
+          selectedShippingMethod = e.target.value;
+          updateTotals();
+        }
+      });
+    });
+
+    var paymentRadios = document.querySelectorAll('input[name="paymentMethod"]');
+    paymentRadios.forEach(function(radio) {
+      radio.addEventListener('change', function(e) {
+        paymentRadios.forEach(function(r) {
+          r.closest('.custom-radio-option').classList.remove('checked');
+        });
+        if (e.target.checked) {
+          e.target.closest('.custom-radio-option').classList.add('checked');
+        }
+      });
+    });
+
+    if (checkoutForm) {
+      checkoutForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        if (cartItems.length === 0) return;
+
+        if (!selectedDestination) {
+          alert('Please search and select your destination (Province, City, District) from the autocomplete suggestions list.');
+          if (provinceInput) provinceInput.focus();
+          return;
+        }
+
+        var selectedPaymentRadio = document.querySelector('input[name="paymentMethod"]:checked');
+
+        var customerNameVal = document.getElementById('customerName').value.trim();
+        var customerEmailVal = document.getElementById('customerEmail').value.trim();
+        var customerPhoneVal = document.getElementById('customerPhone').value.trim();
+        var addressVal = document.getElementById('address').value.trim();
+        var postalCodeVal = document.getElementById('postalCode').value.trim();
+
+        if (!customerNameVal || !customerEmailVal || !customerPhoneVal || !addressVal) {
+          alert('Please fill out all required fields.');
+          return;
+        }
+
+        var paymentMethodName = selectedPaymentRadio ? selectedPaymentRadio.value : 'QRIS';
+
+        var createdAt = new Date().toISOString();
+        var randomNum = Math.floor(10000 + Math.random() * 90000);
+        var generatedOrderId = 'AQS-' + randomNum;
+
+        var purchasedItems = [];
+        for (var idx = 0; idx < cartItems.length; idx++) {
+          var cartItem = cartItems[idx];
+          purchasedItems.push({
+            id: cartItem.id,
+            name: cartItem.name,
+            price: Number(cartItem.price),
+            quantity: Number(cartItem.quantity)
+          });
+        }
+
+        var orderData = {
+          orderId: generatedOrderId,
+          customer: {
+            name: customerNameVal,
+            email: customerEmailVal,
+            phone: customerPhoneVal
+          },
+          shippingAddress: {
+            province: selectedDestination.province,
+            city: selectedDestination.city,
+            district: selectedDestination.district,
+            postalCode: postalCodeVal,
+            fullAddress: addressVal
+          },
+          items: purchasedItems,
+          shippingMethod: selectedShippingMethod,
+          shippingCost: Number(currentShippingCost),
+          subtotal: Number(subtotal),
+          orderTotal: Number(subtotal + currentShippingCost),
+          paymentMethod: paymentMethodName,
+          paymentStatus: 'Pending Payment',
+          statusHistory: [
+            {
+              status: 'Pending Payment',
+              timestamp: createdAt,
+              note: 'Order created in checkout, awaiting payment confirmation.'
+            }
+          ],
+          createdAt: createdAt,
+          updatedAt: createdAt
+        };
+
+        localStorage.setItem('aqs_pending_order', JSON.stringify(orderData));
+
+        console.log('[Email Queue System Trigger] Queuing ORDER_AWAITING receipt in checkout submission.');
+
+        // Redirect to /payment gateway page
+        window.location.href = '/payment';
+      });
+    }
+
+    window.addEventListener('aqs-cart-update', function(e) {
+      if (e.detail && e.detail.items) {
+        cartItems = e.detail.items;
+        subtotal = 0;
+        for (var i = 0; i < cartItems.length; i++) {
+          subtotal += (cartItems[i].price * cartItems[i].quantity);
+        }
+        renderSummary();
+      }
+    });
+
+    loadCartData();
+  })();
+</script>

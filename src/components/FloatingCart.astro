@@ -1,0 +1,161 @@
+<button 
+  id="floating-cart-btn" 
+  class="floating-cart-btn" 
+  aria-label="Open Shopping Cart"
+>
+  <!-- Black cart icon centered -->
+  <svg class="cart-icon" viewBox="0 0 24 24" fill="none" stroke="#111111" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width: 26px; height: 26px; display: block;">
+    <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+    <line x1="3" y1="6" x2="21" y2="6"></line>
+    <path d="M16 10a4 4 0 0 1-8 0"></path>
+  </svg>
+  
+  <!-- Quantity Badge -->
+  <span id="floating-cart-badge" class="cart-badge hidden">0</span>
+</button>
+
+<style>
+  :global(.floating-cart-btn) {
+    position: fixed !important;
+    bottom: 24px !important;
+    right: 24px !important;
+    width: 68px !important; /* Increased by 15% from 60px */
+    height: 68px !important;
+    border-radius: 50% !important;
+    background-color: #ffffff !important; /* White background */
+    border: 1px solid #e5e5e5 !important; /* Subtle border */
+    color: #111111 !important; /* Black cart icon */
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35) !important; /* Slightly stronger shadow */
+    z-index: 999999 !important; /* Highest priority layer */
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease !important;
+    padding: 0 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  :global(.floating-cart-btn:hover) {
+    border-color: #111111 !important;
+    transform: scale(1.06) translateY(-2px) !important;
+  }
+
+  .cart-icon {
+    width: 26px !important; /* Scaled up from 22px */
+    height: 26px !important;
+    stroke: #111111 !important;
+  }
+
+  /* Cart Counter Badge attached to the top-right of the circle */
+  :global(.cart-badge) {
+    position: absolute !important;
+    top: -2px !important;
+    right: -2px !important;
+    background-color: #ffffff !important; /* Badge remains white */
+    color: #111111 !important; /* Black text */
+    font-family: 'Satoshi', Helvetica, Arial, sans-serif !important;
+    font-size: 0.65rem !important;
+    font-weight: 700 !important;
+    width: 20px !important;
+    height: 20px !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border: 1px solid #111111 !important;
+    z-index: 1000000 !important;
+    transition: transform 0.2s ease, opacity 0.2s ease !important;
+  }
+
+  :global(.cart-badge.hidden) {
+    opacity: 0 !important;
+    transform: scale(0.8) !important;
+    pointer-events: none !important;
+  }
+
+  /* Adjust placement for mobile viewports */
+  @media (max-width: 767px) {
+    :global(.floating-cart-btn) {
+      width: 60px !important; /* Increased by 15% from 52px */
+      height: 60px !important;
+      bottom: 24px !important;
+      right: 24px !important;
+    }
+    .cart-icon {
+      width: 22px !important;
+      height: 22px !important;
+    }
+    :global(.cart-badge) {
+      width: 18px !important;
+      height: 18px !important;
+      font-size: 0.6rem !important;
+    }
+  }
+</style>
+
+<script is:inline>
+  (function() {
+    // Hide floating cart button on checkout and order-success pages for distraction-free flow
+    var path = window.location.pathname.toLowerCase();
+    var cleanPath = path.replace(/\/$/, "").replace(/\/index\.html$/, "");
+    if (cleanPath.endsWith('/checkout') || cleanPath.endsWith('/order-success')) {
+      var cartBtnEl = document.getElementById('floating-cart-btn');
+      if (cartBtnEl) {
+        cartBtnEl.style.setProperty('display', 'none', 'important');
+        cartBtnEl.style.setProperty('visibility', 'hidden', 'important');
+        cartBtnEl.style.setProperty('opacity', '0', 'important');
+        cartBtnEl.style.setProperty('pointer-events', 'none', 'important');
+      }
+      return;
+    }
+
+    var cartBtn = document.getElementById('floating-cart-btn');
+    var cartBadge = document.getElementById('floating-cart-badge');
+
+    function updateBadge(items) {
+      if (!cartBadge) return;
+      var total = 0;
+      if (items && items.length) {
+        for (var i = 0; i < items.length; i++) {
+          total += (items[i].quantity || 0);
+        }
+      }
+      if (total > 0) {
+        cartBadge.textContent = total;
+        cartBadge.classList.remove('hidden');
+      } else {
+        cartBadge.classList.add('hidden');
+      }
+    }
+
+    // Listen to cart updates
+    window.addEventListener('aqs-cart-update', function(e) {
+      updateBadge(e.detail && e.detail.items);
+    });
+
+    // Eager/poll check for global store
+    var checkCount = 0;
+    var checkInterval = setInterval(function() {
+      checkCount++;
+      if (window.AQS_Cart && window.AQS_Cart.items) {
+        updateBadge(window.AQS_Cart.items);
+        clearInterval(checkInterval);
+      }
+      if (checkCount > 40) {
+        clearInterval(checkInterval);
+      }
+    }, 50);
+
+    if (cartBtn) {
+      cartBtn.addEventListener('click', function(ev) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        if (window.AQS_Cart) {
+          window.AQS_Cart.openCart();
+        }
+      });
+    }
+  })();
+</script>

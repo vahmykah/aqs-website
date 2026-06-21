@@ -1,0 +1,72 @@
+---
+---
+
+<footer class="site-footer">
+  <div class="footer-container">
+    <div class="footer-left">
+      <span class="copyright">© AQS</span>
+    </div>
+
+    <!-- Minimal links in Satoshi font -->
+    <div class="footer-right">
+      <a href="https://instagram.com/aquietspace" target="_blank" rel="noopener" class="footer-link">Instagram</a>
+      <a href="mailto:info@aquietspace.id" class="footer-link">Contact</a>
+      <button id="info-footer-trigger" class="footer-link-button">Info</button>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    border-top: 1px solid var(--color-border);
+    background-color: var(--color-bg);
+    margin-top: var(--spacing-xl);
+  }
+
+  .footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 3rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    letter-spacing: 0.1em;
+    color: var(--color-text-secondary);
+  }
+
+  .footer-right {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+  }
+
+  .footer-link, .footer-link-button {
+    color: var(--color-text-secondary);
+    transition: color 0.2s ease;
+  }
+
+  .footer-link:hover, .footer-link-button:hover {
+    color: var(--color-text-primary);
+  }
+
+  @media (max-width: 767px) {
+    .footer-container {
+      padding: 2.5rem 1.25rem;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+  }
+</style>
+
+<script>
+  const infoTrigger = document.getElementById('info-footer-trigger');
+  if (infoTrigger) {
+    infoTrigger.addEventListener('click', () => {
+      if ((window as any).AQS_Cart) {
+        (window as any).AQS_Cart.openInfo();
+      }
+    });
+  }
+</script>

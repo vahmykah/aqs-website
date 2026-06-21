@@ -1,0 +1,62 @@
+---
+interface Props {
+  desktopSrc: string;
+  mobileSrc: string;
+  alt: string;
+}
+
+const { desktopSrc, mobileSrc, alt } = Astro.props;
+---
+
+<section class="hero-section">
+  <div class="hero-image-wrapper">
+    <picture>
+      <!-- Desktop & Tablet: Cinematic 16:9 landscape asset -->
+      <source media="(min-width: 768px)" srcset={desktopSrc} />
+      <!-- Mobile: 4:5 portrait asset prioritizing product visibility -->
+      <img src={mobileSrc} alt={alt} class="hero-img" width="1200" height="675" loading="eager" />
+    </picture>
+  </div>
+</section>
+
+<style>
+  .hero-section {
+    padding-top: var(--spacing-sm);
+    background-color: var(--color-bg);
+    width: 100%;
+  }
+
+  .hero-image-wrapper {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-md);
+  }
+
+  .hero-img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    background-color: #242424; /* Dark loader placeholder */
+    border: 1px solid var(--color-border);
+  }
+
+  /* Desktop and tablet 16:9 structure */
+  @media (min-width: 768px) {
+    .hero-img {
+      aspect-ratio: 16 / 9;
+    }
+  }
+
+  /* Mobile Portrait adjustment */
+  @media (max-width: 767px) {
+    .hero-image-wrapper {
+      padding: 0; /* Bleed to edge on mobile screens */
+    }
+
+    .hero-img {
+      aspect-ratio: 4 / 5;
+      object-position: left center; /* Prioritize the bag on the left while keeping background wall visible */
+    }
+  }
+</style>

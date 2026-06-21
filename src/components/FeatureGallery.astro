@@ -1,0 +1,379 @@
+---
+interface FeatureItem {
+  label: string;
+  src: string;
+  captionTitle?: string;
+  captionDesc?: string;
+}
+
+interface Props {
+  items: FeatureItem[];
+}
+
+const { items } = Astro.props;
+---
+
+<div class="feature-gallery-container">
+  <div class="gallery-layout-grid">
+    <!-- Left: Vertical Thumbnail Gallery (Images Only) -->
+    <div class="thumbnail-sidebar" aria-label="Product detail thumbnails">
+      {items.map((item, idx) => (
+        <button 
+          class={`thumb-btn ${idx === 0 ? 'active' : ''}`}
+          data-src={item.src}
+          data-alt={item.label}
+          data-caption-title={item.captionTitle || ''}
+          data-caption-desc={item.captionDesc || ''}
+          aria-label={`View image ${idx + 1}: ${item.label}`}
+        >
+          <img src={item.src} alt="" class="thumb-img" loading="lazy" />
+        </button>
+      ))}
+    </div>
+
+    <!-- Center: Large Active Image Viewport + Editorial Footer -->
+    <div class="center-column-wrap">
+      <!-- Large Active Image Viewport -->
+      <div class="active-viewport-wrap">
+        <img 
+          id="active-viewport-img" 
+          src={items[0].src} 
+          alt={items[0].label} 
+          class="active-viewport-img" 
+          width="1200" 
+          height="1500" 
+          loading="eager"
+        />
+        <!-- Caption Overlay -->
+        <div 
+          id="gallery-caption-overlay" 
+          class="gallery-caption-overlay"
+        >
+          <span class="caption-title" id="gallery-caption-title">{items[0].captionTitle || ''}</span>
+          <span class="caption-desc" id="gallery-caption-desc">{items[0].captionDesc || ''}</span>
+        </div>
+      </div>
+      
+      <!-- Editorial Footer Signature (Visually belongs to Column 2 / Active Viewport) -->
+      <div class="editorial-footer-signature-wrap">
+        <div class="editorial-footer-signature">
+          <span class="editorial-footer-tag">ARTICLE 01</span>
+          <span class="editorial-footer-primary">The State of Enough</span>
+          <span class="editorial-footer-secondary">A Quiet Space</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Purchase Column wrapper (Column 3) -->
+    <div class="purchase-column-wrap">
+      <slot />
+    </div>
+  </div>
+</div>
+
+<style>
+  .feature-gallery-container {
+    max-width: 1200px; /* Intimate premium fashion gallery container size */
+    margin: 0 auto;
+    padding: var(--spacing-md);
+    padding-left: 0.25rem; /* Reduced left padding to move gallery closer to edge */
+    background-color: var(--color-bg);
+  }
+
+  .gallery-layout-grid {
+    display: grid;
+    grid-template-columns: 68px 48% 1.15fr; /* Shift composition left by expanding rightmost column weight */
+    gap: 2.5rem; /* Shift block left and visually balance layout */
+    align-items: start;
+  }
+
+  /* Thumbnail Column (Left) */
+  .thumbnail-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .thumb-btn {
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    background-color: #242424;
+    border: 1px solid transparent;
+    padding: 0;
+    overflow: hidden;
+    cursor: pointer;
+    opacity: 0.4; /* Subtle dimming for inactive thumbnails */
+    transition: opacity 0.3s ease, border-color 0.3s ease;
+  }
+
+  .thumb-btn:hover {
+    opacity: 0.8;
+  }
+
+  /* Subtle highlight for the active thumbnail */
+  .thumb-btn.active {
+    opacity: 1;
+    border-color: var(--color-text-primary); /* White/light border highlight */
+  }
+
+  .thumb-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Center Column Wrapper containing active viewport and footer */
+  .center-column-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem; /* Clean gap between viewport and signature footer */
+    width: 100%;
+  }
+
+  /* Large Viewport (Right - Primary Focal Point) */
+  .active-viewport-wrap {
+    position: relative; /* Added relative positioning for absolute child overlay */
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    background-color: #242424;
+    border: 1px solid var(--color-border);
+    overflow: hidden;
+  }
+
+  .active-viewport-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1); /* Enhanced for smooth fading */
+  }
+
+  /* Caption Overlay Styling */
+  .gallery-caption-overlay {
+    position: absolute;
+    bottom: 18%; /* Positioned approximately 18% above the bottom edge */
+    left: 50%;
+    transform: translate(-50%, 10px); /* Initially translated down by 10px */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    text-align: center;
+    width: 90%;
+    pointer-events: none; /* Subtle and non-intrusive / non-clickable */
+    opacity: 0; /* Hidden by default - only shows on hover */
+    transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); /* Approx 300ms fade in/out and translate duration */
+    /* Soft text shadow for readability over dark or light image backgrounds, keeping it clean and editorial */
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  }
+
+  /* Hover state: caption overlay fades in smoothly and moves up */
+  .active-viewport-wrap:hover .gallery-caption-overlay {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+
+  /* Swap interaction state: fades out both image and caption and resets position */
+  .active-viewport-wrap.swapping .active-viewport-img,
+  .active-viewport-wrap.swapping .gallery-caption-overlay {
+    opacity: 0 !important;
+    transform: translate(-50%, 10px) !important;
+  }
+
+  .caption-title {
+    font-family: var(--font-sans); /* Satoshi */
+    font-size: 16px; /* Reduced by approximately 20% from 20px */
+    font-weight: 600; /* Font weight 600 */
+    letter-spacing: 0.12em; /* Letter spacing 0.12em */
+    color: #ffffff; /* White */
+    text-transform: uppercase;
+  }
+
+  .caption-desc {
+    font-family: var(--font-sans); /* Satoshi */
+    font-size: 12px; /* Reduced by approximately 15% from 14px */
+    font-weight: 400; /* Normal weight */
+    color: #ffffff; /* White */
+  }
+
+  /* Editorial Footer Signature inside Column 2 */
+  .editorial-footer-signature-wrap {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    margin-top: 0.5rem;
+  }
+
+  .editorial-footer-signature {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-top: 1px solid var(--color-border);
+    padding-top: 1.5rem;
+    width: 100%;
+    max-width: 320px;
+    text-align: center;
+    font-family: var(--font-sans); /* Satoshi */
+  }
+
+  .editorial-footer-tag {
+    font-family: var(--font-serif); /* Sentient */
+    font-size: 0.65rem;
+    font-weight: 500;
+    letter-spacing: 0.20em;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+  }
+
+  .editorial-footer-primary {
+    font-size: var(--text-base);
+    font-weight: 500;
+    color: var(--color-text-primary);
+    letter-spacing: 0.05em;
+    margin-bottom: 0.25rem;
+  }
+
+  .editorial-footer-secondary {
+    font-size: var(--text-xs);
+    font-weight: 400;
+    color: var(--color-text-secondary);
+    letter-spacing: 0.08em;
+  }
+
+  .purchase-column-wrap {
+    width: 100%;
+  }
+
+  @media (max-width: 1024px) {
+    .gallery-layout-grid {
+      grid-template-columns: 68px 1fr; /* Fallback to two columns on tablets, pushing slot below */
+      gap: 2.5rem;
+    }
+    
+    .purchase-column-wrap {
+      grid-column: 1 / span 2; /* Stretch slot across both columns */
+      margin-top: 2rem;
+    }
+
+    .center-column-wrap {
+      grid-column: 2;
+    }
+  }
+
+  @media (max-width: 767px) {
+    .feature-gallery-container {
+      padding: 0;
+    }
+
+    .gallery-layout-grid {
+      grid-template-columns: 1fr; /* Stack viewport on top on mobile screens */
+      gap: 0;
+    }
+
+    .active-viewport-wrap {
+      border-left: none;
+      border-right: none;
+    }
+
+    /* Horizontal scroll strip for thumbnails on mobile devices */
+    .thumbnail-sidebar {
+      flex-direction: row;
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding: 1.25rem;
+      gap: 1rem;
+      -webkit-overflow-scrolling: touch;
+      order: 2; /* Render below image */
+    }
+
+    /* Hide scrollbars for chrome/safari/firefox */
+    .thumbnail-sidebar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .thumb-btn {
+      width: 60px;
+      flex-shrink: 0;
+    }
+
+    .center-column-wrap {
+      grid-column: auto;
+      order: 1; /* Render at the top */
+    }
+
+    .purchase-column-wrap {
+      grid-column: auto;
+      order: 3; /* Stack at the bottom */
+      padding: 0 var(--spacing-md) var(--spacing-lg);
+      margin-top: 0;
+    }
+
+    .caption-title {
+      font-size: 13px; /* Reduced from 15px */
+      letter-spacing: 0.1em;
+    }
+
+    .caption-desc {
+      font-size: 10px; /* Reduced from 11px */
+    }
+
+    .gallery-caption-overlay {
+      bottom: 15%;
+    }
+
+    .editorial-footer-signature-wrap {
+      padding: 0 var(--spacing-md);
+      margin-bottom: 1.5rem;
+    }
+  }
+</style>
+
+<script>
+  interface FeatureItemElement extends HTMLElement {
+    dataset: {
+      src?: string;
+      alt?: string;
+      captionTitle?: string;
+      captionDesc?: string;
+    };
+  }
+
+  const activeImg = document.getElementById('active-viewport-img') as HTMLImageElement | null;
+  const viewportWrap = document.querySelector('.active-viewport-wrap');
+  const captionTitle = document.getElementById('gallery-caption-title');
+  const captionDesc = document.getElementById('gallery-caption-desc');
+  const thumbBtns = document.querySelectorAll('.thumb-btn');
+
+  if (activeImg && viewportWrap) {
+    thumbBtns.forEach(btn => {
+      btn.addEventListener('click', (ev) => {
+        const target = ev.currentTarget as FeatureItemElement;
+        const src = target.dataset.src || '';
+        const alt = target.dataset.alt || '';
+        const cTitle = target.dataset.captionTitle || '';
+        const cDesc = target.dataset.captionDesc || '';
+
+        // Add swapping class to fade out both image and caption
+        viewportWrap.classList.add('swapping');
+        
+        setTimeout(() => {
+          activeImg.src = src;
+          activeImg.alt = alt;
+          
+          if (captionTitle) {
+            captionTitle.textContent = cTitle;
+          }
+          if (captionDesc) {
+            captionDesc.textContent = cDesc;
+          }
+
+          // Remove swapping class to trigger fade-in
+          viewportWrap.classList.remove('swapping');
+        }, 200);
+
+        thumbBtns.forEach(b => b.classList.remove('active'));
+        target.classList.add('active');
+      });
+    });
+  }
+</script>
