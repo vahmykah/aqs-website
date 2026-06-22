@@ -51,11 +51,6 @@ import Layout from '../layouts/Layout.astro';
             </div>
           </div>
           <div class="form-row">
-            <div class="form-group autocomplete-wrapper">
-              <label for="district" class="form-label">District</label>
-              <input type="text" id="district" name="district" required placeholder="Kebayoran Baru" class="form-input" autocomplete="off" />
-              <div id="district-suggestions" class="autocomplete-suggestions hidden"></div>
-            </div>
             <div class="form-group">
               <label for="postalCode" class="form-label">Postal Code</label>
               <input type="text" id="postalCode" name="postalCode" required placeholder="12110" class="form-input" />
@@ -698,36 +693,45 @@ import Layout from '../layouts/Layout.astro';
     // Autocomplete elements
     var provinceInput = document.getElementById('province');
     var cityInput = document.getElementById('city');
-    var districtInput = document.getElementById('district');
     var postalCodeInput = document.getElementById('postalCode');
 
     var provinceSg = document.getElementById('province-suggestions');
     var citySg = document.getElementById('city-suggestions');
-    var districtSg = document.getElementById('district-suggestions');
 
     var shippingPlaceholderMsg = document.getElementById('shipping-placeholder-msg');
     var shippingMethodsContainer = document.getElementById('shipping-methods-container');
 
-    // Initially disable City & District, clear all values on load to prevent stale autocomplete or autofill values
+    // Initially disable City, clear all values on load to prevent stale autocomplete or autofill values
     if (provinceInput) provinceInput.value = '';
     if (cityInput) {
       cityInput.value = '';
       cityInput.disabled = true;
     }
-    if (districtInput) {
-      districtInput.value = '';
-      districtInput.disabled = true;
-    }
     if (postalCodeInput) {
       postalCodeInput.value = '';
-      postalCodeInput.readOnly = true;
+      postalCodeInput.readOnly = false;
+
+      // Allow only digits, max 5 characters, and manage custom validation validity
+      postalCodeInput.addEventListener('input', function() {
+        var sanitized = postalCodeInput.value.replace(/\D/g, '').substring(0, 5);
+        if (postalCodeInput.value !== sanitized) {
+          postalCodeInput.value = sanitized;
+        }
+        if (sanitized.length === 5) {
+          postalCodeInput.setCustomValidity('');
+        } else {
+          postalCodeInput.setCustomValidity('Please enter a valid 5-digit postal code.');
+        }
+      });
+
+      // Initialize native validation error state
+      postalCodeInput.setCustomValidity('Please enter a valid 5-digit postal code.');
     }
 
     // Helper: close all suggestions
     function closeAllSuggestions() {
       if (provinceSg) provinceSg.classList.add('hidden');
       if (citySg) citySg.classList.add('hidden');
-      if (districtSg) districtSg.classList.add('hidden');
     }
 
     // Close when click outside
@@ -737,18 +741,49 @@ import Layout from '../layouts/Layout.astro';
       }
     });
 
-    // Close suggestions on blur (delayed to allow clicks)
-    function addBlurListener(input, suggestionBox) {
+    // Validation functions to verify input values against the dataset
+    function isProvinceValid() {
+      if (!provinceInput) return false;
+      var val = provinceInput.value.trim().toLowerCase();
+      if (!val) return false;
+      for (var i = 0; i < MOCK_DESTINATIONS.length; i++) {
+        if (MOCK_DESTINATIONS[i].province.toLowerCase() === val) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    function isCityValid() {
+      if (!provinceInput || !provinceInput.value || !cityInput) return false;
+      var provVal = provinceInput.value.toLowerCase();
+      var val = cityInput.value.trim().toLowerCase();
+      if (!val) return false;
+      for (var i = 0; i < MOCK_DESTINATIONS.length; i++) {
+        var d = MOCK_DESTINATIONS[i];
+        if (d.province.toLowerCase() === provVal && d.city.toLowerCase() === val) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    // Close suggestions and enforce selection on blur (delayed to allow clicks)
+    function addBlurListener(input, suggestionBox, changeHandler, validationFunc) {
       input.addEventListener('blur', function() {
         setTimeout(function() {
           if (suggestionBox) suggestionBox.classList.add('hidden');
-        }, 200);
+          // Strict validation: clear value if it does not exactly match a valid option
+          if (!validationFunc()) {
+            input.value = '';
+            changeHandler();
+          }
+        }, 250);
       });
     }
 
-    if (provinceInput) addBlurListener(provinceInput, provinceSg);
-    if (cityInput) addBlurListener(cityInput, citySg);
-    if (districtInput) addBlurListener(districtInput, districtSg);
+    if (provinceInput) addBlurListener(provinceInput, provinceSg, onProvinceChange, isProvinceValid);
+    if (cityInput) addBlurListener(cityInput, citySg, onCityChange, isCityValid);
 
     // Cascading address handlers
     function onProvinceChange() {
@@ -756,10 +791,6 @@ import Layout from '../layouts/Layout.astro';
       if (cityInput) {
         cityInput.value = '';
         cityInput.disabled = true;
-      }
-      if (districtInput) {
-        districtInput.value = '';
-        districtInput.disabled = true;
       }
       if (postalCodeInput) {
         postalCodeInput.value = '';
@@ -788,10 +819,6 @@ import Layout from '../layouts/Layout.astro';
 
     function onCityChange() {
       // Clear dependent fields immediately
-      if (districtInput) {
-        districtInput.value = '';
-        districtInput.disabled = true;
-      }
       if (postalCodeInput) {
         postalCodeInput.value = '';
       }
@@ -801,53 +828,21 @@ import Layout from '../layouts/Layout.astro';
       if (!provinceInput || !provinceInput.value) return;
       var provVal = provinceInput.value.toLowerCase();
       var cityVal = cityInput.value.trim().toLowerCase();
-      var match = false;
-
-      for (var i = 0; i < MOCK_DESTINATIONS.length; i++) {
-        var d = MOCK_DESTINATIONS[i];
-        if (d.province.toLowerCase() === provVal && d.city.toLowerCase() === cityVal) {
-          match = true;
-          if (cityInput.value !== d.city) {
-            cityInput.value = d.city;
-          }
-          break;
-        }
-      }
-
-      if (match) {
-        if (districtInput) districtInput.disabled = false;
-      }
-    }
-
-    function onDistrictChange() {
-      // Clear dependent fields immediately
-      if (postalCodeInput) {
-        postalCodeInput.value = '';
-      }
-      selectedDestination = null;
-      resetShippingRates();
-
-      if (!provinceInput || !provinceInput.value || !cityInput || !cityInput.value) return;
-      var provVal = provinceInput.value.toLowerCase();
-      var cityVal = cityInput.value.toLowerCase();
-      var distVal = districtInput.value.trim().toLowerCase();
       var match = null;
 
       for (var i = 0; i < MOCK_DESTINATIONS.length; i++) {
         var d = MOCK_DESTINATIONS[i];
-        if (d.province.toLowerCase() === provVal && 
-            d.city.toLowerCase() === cityVal && 
-            d.district.toLowerCase() === distVal) {
+        if (d.province.toLowerCase() === provVal && d.city.toLowerCase() === cityVal) {
           match = d;
           break;
         }
       }
 
       if (match) {
-        if (districtInput.value !== match.district) {
-          districtInput.value = match.district;
+        if (cityInput.value !== match.city) {
+          cityInput.value = match.city;
         }
-        if (postalCodeInput) postalCodeInput.value = match.postalCode;
+        // Postal Code is manually entered by the customer (no autofill)
         selectedDestination = match;
         calculateAndShowShipping();
       }
@@ -953,57 +948,6 @@ import Layout from '../layouts/Layout.astro';
           cityInput.value = cVal;
           citySg.classList.add('hidden');
           onCityChange();
-          if (districtInput) districtInput.focus();
-        });
-      });
-    }
-
-    // District Autocomplete setup
-    if (districtInput && districtSg) {
-      districtInput.addEventListener('focus', function() {
-        renderDistrictSuggestions(districtInput.value);
-      });
-      districtInput.addEventListener('input', function() {
-        renderDistrictSuggestions(districtInput.value);
-        onDistrictChange();
-      });
-    }
-
-    function renderDistrictSuggestions(val) {
-      if (!provinceInput || !provinceInput.value || !cityInput || !cityInput.value) return;
-      var currentProvince = provinceInput.value;
-      var currentCity = cityInput.value;
-      var query = val.toLowerCase().trim();
-
-      var matches = MOCK_DESTINATIONS.filter(function(dest) {
-        return dest.province.toLowerCase() === currentProvince.toLowerCase() &&
-               dest.city.toLowerCase() === currentCity.toLowerCase() &&
-               dest.district.toLowerCase().includes(query);
-      });
-
-      if (matches.length === 0) {
-        districtSg.classList.add('hidden');
-        return;
-      }
-
-      var html = '';
-      for (var i = 0; i < matches.length; i++) {
-        html += '<div class="autocomplete-suggestion-item" data-id="' + matches[i].id + '" data-district="' + matches[i].district + '" data-postal="' + matches[i].postalCode + '">' + matches[i].district + '</div>';
-      }
-      districtSg.innerHTML = html;
-      districtSg.classList.remove('hidden');
-
-      var items = districtSg.querySelectorAll('.autocomplete-suggestion-item');
-      items.forEach(function(item) {
-        item.addEventListener('mousedown', function(e) {
-          e.preventDefault();
-          var dId = item.getAttribute('data-id');
-          var dVal = item.getAttribute('data-district');
-
-          districtInput.value = dVal;
-          districtSg.classList.add('hidden');
-
-          onDistrictChange();
         });
       });
     }
@@ -1019,7 +963,7 @@ import Layout from '../layouts/Layout.astro';
       var rates = {};
       
       try {
-        var triggerSimulatedFail = selectedDestination.district.toLowerCase().includes('fail') || 
+        var triggerSimulatedFail = selectedDestination.city.toLowerCase().includes('fail') || 
                                    window.location.search.includes('simulate_shipping_fail');
         
         if (triggerSimulatedFail) {
@@ -1154,7 +1098,7 @@ import Layout from '../layouts/Layout.astro';
         if (cartItems.length === 0) return;
 
         if (!selectedDestination) {
-          alert('Please search and select your destination (Province, City, District) from the autocomplete suggestions list.');
+          alert('Please search and select your destination (Province, City) from the autocomplete suggestions list.');
           if (provinceInput) provinceInput.focus();
           return;
         }
@@ -1167,8 +1111,15 @@ import Layout from '../layouts/Layout.astro';
         var addressVal = document.getElementById('address').value.trim();
         var postalCodeVal = document.getElementById('postalCode').value.trim();
 
-        if (!customerNameVal || !customerEmailVal || !customerPhoneVal || !addressVal) {
+        if (!customerNameVal || !customerEmailVal || !customerPhoneVal || !addressVal || !postalCodeVal) {
           alert('Please fill out all required fields.');
+          return;
+        }
+
+        if (!/^\d{5}$/.test(postalCodeVal)) {
+          alert('Please enter a valid 5-digit postal code.');
+          var pInput = document.getElementById('postalCode');
+          if (pInput) pInput.focus();
           return;
         }
 
@@ -1199,7 +1150,6 @@ import Layout from '../layouts/Layout.astro';
           shippingAddress: {
             province: selectedDestination.province,
             city: selectedDestination.city,
-            district: selectedDestination.district,
             postalCode: postalCodeVal,
             fullAddress: addressVal
           },

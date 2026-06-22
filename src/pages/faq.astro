@@ -1,0 +1,280 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="FAQ | A Quiet Space" description="Frequently asked questions about A Quiet Space bag capacities, laptop compartments, strap inclusions, shipping timelines, order tracking, and returns.">
+  <div class="about-wrapper">
+    <header class="about-header">
+      <h1 class="brand-title sentient-heading">A Quiet Space</h1>
+      <span class="brand-tagline satoshi-text">carry what matters</span>
+    </header>
+
+    <div class="about-content">
+      <section class="about-section">
+        <h2 class="section-title sentient-heading">Frequently Asked Questions</h2>
+        
+        <div class="faq-accordion">
+          <!-- Item 1 -->
+          <div class="faq-item">
+            <button class="faq-trigger" aria-expanded="false">
+              <span class="faq-question sentient-heading">What can the bag fit?</span>
+              <span class="faq-icon">+</span>
+            </button>
+            <div class="faq-content">
+              <p class="about-text">
+                The bag is designed for daily essentials including laptops, books, water bottles, chargers, notebooks, and personal items.
+              </p>
+            </div>
+          </div>
+
+          <!-- Item 2 -->
+          <div class="faq-item">
+            <button class="faq-trigger" aria-expanded="false">
+              <span class="faq-question sentient-heading">Does the bag fit a laptop?</span>
+              <span class="faq-icon">+</span>
+            </button>
+            <div class="faq-content">
+              <p class="about-text">
+                Yes. The bag includes a dedicated laptop compartment.
+              </p>
+            </div>
+          </div>
+
+          <!-- Item 3 -->
+          <div class="faq-item">
+            <button class="faq-trigger" aria-expanded="false">
+              <span class="faq-question sentient-heading">Are straps included?</span>
+              <span class="faq-icon">+</span>
+            </button>
+            <div class="faq-content">
+              <p class="about-text">
+                Yes. Every order includes two adjustable straps.
+              </p>
+            </div>
+          </div>
+
+          <!-- Item 4 -->
+          <div class="faq-item">
+            <button class="faq-trigger" aria-expanded="false">
+              <span class="faq-question sentient-heading">How long does shipping take?</span>
+              <span class="faq-icon">+</span>
+            </button>
+            <div class="faq-content">
+              <p class="about-text">
+                Processing usually takes 1–3 business days. Delivery times vary by destination.
+              </p>
+            </div>
+          </div>
+
+          <!-- Item 5 -->
+          <div class="faq-item">
+            <button class="faq-trigger" aria-expanded="false">
+              <span class="faq-question sentient-heading">How can I track my order?</span>
+              <span class="faq-icon">+</span>
+            </button>
+            <div class="faq-content">
+              <p class="about-text">
+                Customers will receive a tracking number by email once the order has been shipped.
+              </p>
+            </div>
+          </div>
+
+          <!-- Item 6 -->
+          <div class="faq-item">
+            <button class="faq-trigger" aria-expanded="false">
+              <span class="faq-question sentient-heading">Can I return or exchange my order?</span>
+              <span class="faq-icon">+</span>
+            </button>
+            <div class="faq-content">
+              <p class="about-text">
+                Yes. Please refer to the <a href="/returns-exchanges" class="faq-link">Return & Exchange Policy</a> page for full details.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .about-wrapper {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 6rem 2rem 8rem 2rem;
+  }
+
+  .about-header {
+    text-align: center;
+    margin-bottom: 5rem;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 2.5rem;
+  }
+
+  .sentient-heading {
+    font-family: var(--font-serif);
+    font-weight: 400;
+  }
+
+  .satoshi-text {
+    font-family: var(--font-sans);
+  }
+
+  .brand-title {
+    font-size: var(--text-xxl);
+    letter-spacing: 0.1em;
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+  }
+
+  .brand-tagline {
+    font-size: var(--text-sm);
+    letter-spacing: 0.25em;
+    text-transform: lowercase;
+    color: var(--color-text-secondary);
+  }
+
+  .about-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4.5rem;
+  }
+
+  .about-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .section-title {
+    font-size: var(--text-lg);
+    letter-spacing: 0.05em;
+    color: var(--color-text-primary);
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  /* Accordion Layout */
+  .faq-accordion {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .faq-item {
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .faq-trigger {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    border: none;
+    background: none;
+    cursor: pointer;
+    text-align: left;
+    padding: 1.5rem 0;
+    color: var(--color-text-primary);
+    outline: none;
+  }
+
+  .faq-question {
+    font-size: var(--text-base);
+    letter-spacing: 0.05em;
+    font-weight: 400;
+    transition: color 0.3s ease;
+  }
+
+  .faq-trigger:hover .faq-question {
+    color: var(--color-text-secondary);
+  }
+
+  .faq-icon {
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    font-weight: 300;
+    color: var(--color-text-secondary);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), color 0.4s ease;
+  }
+
+  .faq-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1), padding 0.4s ease;
+    padding: 0;
+  }
+
+  .faq-item.active .faq-content {
+    max-height: 120px;
+    padding-bottom: 1.5rem;
+  }
+
+  .faq-item.active .faq-icon {
+    transform: rotate(45deg);
+    color: var(--color-text-primary);
+  }
+
+  .about-text {
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    line-height: 1.75;
+    color: var(--color-text-secondary);
+  }
+
+  .faq-link {
+    color: var(--color-text-primary);
+    text-decoration: underline;
+    transition: color 0.2s ease;
+  }
+
+  .faq-link:hover {
+    color: var(--color-text-secondary);
+  }
+
+  @media (max-width: 767px) {
+    .about-wrapper {
+      padding: 4rem 1.25rem 6rem 1.25rem;
+    }
+
+    .about-header {
+      margin-bottom: 3.5rem;
+      padding-bottom: 2rem;
+    }
+
+    .section-title {
+      font-size: var(--text-base);
+    }
+
+    .faq-question {
+      font-size: var(--text-sm);
+      padding-right: 1rem;
+    }
+  }
+</style>
+
+<script>
+  (function() {
+    const triggers = document.querySelectorAll('.faq-trigger');
+    triggers.forEach(trigger => {
+      trigger.addEventListener('click', () => {
+        const item = trigger.closest('.faq-item');
+        if (!item) return;
+        const isCurrentlyActive = item.classList.contains('active');
+
+        // Close all items
+        document.querySelectorAll('.faq-item').forEach(el => {
+          el.classList.remove('active');
+          const trg = el.querySelector('.faq-trigger');
+          if (trg) trg.setAttribute('aria-expanded', 'false');
+        });
+
+        // Toggle clicked item
+        if (!isCurrentlyActive) {
+          item.classList.add('active');
+          trigger.setAttribute('aria-expanded', 'true');
+        }
+      });
+    });
+  })();
+</script>

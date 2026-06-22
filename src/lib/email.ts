@@ -150,8 +150,7 @@ export function generateEmailHtml(type: EmailType, order: OrderDetails): string 
                   <p style="margin: 0; font-family: sans-serif; font-size: 13px; color: #555555; line-height: 1.5;">
                     <strong>${order.customer.name}</strong><br>
                     ${order.shippingAddress.fullAddress}<br>
-                    ${order.shippingAddress.district}, ${order.shippingAddress.city}<br>
-                    ${order.shippingAddress.province} ${order.shippingAddress.postalCode}<br>
+                    ${order.shippingAddress.city}, ${order.shippingAddress.province} ${order.shippingAddress.postalCode}<br>
                     Phone: ${order.customer.phone}
                   </p>
                 </td>

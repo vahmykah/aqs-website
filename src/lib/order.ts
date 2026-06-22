@@ -51,7 +51,6 @@ export interface OrderDetails {
   shippingAddress: {
     province: string;
     city: string;
-    district: string;
     postalCode: string;
     fullAddress: string;
   };

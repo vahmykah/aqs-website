@@ -1,0 +1,131 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Shipping Policy | A Quiet Space" description="View A Quiet Space's shipping policy guidelines, processing timelines, and courier delivery terms.">
+  <div class="about-wrapper">
+    <header class="about-header">
+      <h1 class="brand-title sentient-heading">A Quiet Space</h1>
+      <span class="brand-tagline satoshi-text">carry what matters</span>
+    </header>
+
+    <div class="about-content">
+      <section class="about-section">
+        <h2 class="section-title sentient-heading">Shipping Policy</h2>
+        <ul class="policy-list">
+          <li class="about-text">Orders are processed within 1–3 business days after payment confirmation.</li>
+          <li class="about-text">Delivery times vary depending on destination and courier availability.</li>
+          <li class="about-text">Customers will receive a shipping confirmation email containing their tracking number once the order has been dispatched.</li>
+          <li class="about-text">Shipping rates are calculated during checkout based on destination and courier service.</li>
+          <li class="about-text">During high-demand periods, processing and delivery times may be longer than usual.</li>
+          <li class="about-text">A Quiet Space is not responsible for delays caused by courier operations, weather conditions, or force majeure events.</li>
+          <li class="about-text">Customers are responsible for ensuring their shipping address is accurate before completing an order.</li>
+        </ul>
+      </section>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .about-wrapper {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 6rem 2rem 8rem 2rem;
+  }
+
+  .about-header {
+    text-align: center;
+    margin-bottom: 5rem;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 2.5rem;
+  }
+
+  .sentient-heading {
+    font-family: var(--font-serif);
+    font-weight: 400;
+  }
+
+  .satoshi-text {
+    font-family: var(--font-sans);
+  }
+
+  .brand-title {
+    font-size: var(--text-xxl);
+    letter-spacing: 0.1em;
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+  }
+
+  .brand-tagline {
+    font-size: var(--text-sm);
+    letter-spacing: 0.25em;
+    text-transform: lowercase;
+    color: var(--color-text-secondary);
+  }
+
+  .about-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4.5rem;
+  }
+
+  .about-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .section-title {
+    font-size: var(--text-lg);
+    letter-spacing: 0.05em;
+    color: var(--color-text-primary);
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .policy-list {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .policy-list li {
+    position: relative;
+    padding-left: 1.75rem;
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    line-height: 1.75;
+    color: var(--color-text-secondary);
+    text-align: justify;
+  }
+
+  .policy-list li::before {
+    content: "—";
+    position: absolute;
+    left: 0;
+    color: var(--color-text-secondary);
+  }
+
+  @media (max-width: 767px) {
+    .about-wrapper {
+      padding: 4rem 1.25rem 6rem 1.25rem;
+    }
+
+    .about-header {
+      margin-bottom: 3.5rem;
+      padding-bottom: 2rem;
+    }
+
+    .section-title {
+      font-size: var(--text-base);
+    }
+
+    .policy-list li {
+      text-align: left;
+    }
+  }
+</style>
