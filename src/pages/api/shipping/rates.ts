@@ -215,17 +215,22 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     // 2. Query Biteship Rates API
+    const ratesPayload = {
+      origin_area_id: originAreaId,
+      destination_area_id: destinationAreaId,
+      couriers: 'jne,ninja,anteraja', // Biteship requires this parameter
+      items: biteshipItems
+    };
+
+    console.log('[Rates Endpoint] [LIVE REQUEST] Sending payload to Biteship:', JSON.stringify(ratesPayload, null, 2));
+
     const ratesRes = await fetch(`${biteshipApiUrl}/v1/rates/couriers`, {
       method: 'POST',
       headers: {
         'Authorization': apiKey,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        origin_area_id: originAreaId,
-        destination_area_id: destinationAreaId,
-        items: biteshipItems
-      })
+      body: JSON.stringify(ratesPayload)
     });
 
     if (!ratesRes.ok) {
