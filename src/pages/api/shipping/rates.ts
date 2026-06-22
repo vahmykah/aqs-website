@@ -196,7 +196,8 @@ export const POST: APIRoute = async ({ request }) => {
 
     // If Biteship is not enabled or no API key, instantly return the mock baseline
     if (!useBiteship || !apiKey || apiKey === 'your_biteship_api_key_here') {
-      console.log('[Rates Endpoint] Biteship disabled or API key missing, returning mock rates.');
+      console.log('[Rates Endpoint] [FALLBACK TRIGGERED] Biteship disabled or API key missing.');
+      console.log('[Rates Endpoint] useBiteship:', useBiteship, '| apiKey exists:', !!apiKey);
       return new Response(JSON.stringify(baselineRates), {
         status: 200,
         headers: { 'Content-Type': 'application/json' }
@@ -206,7 +207,7 @@ export const POST: APIRoute = async ({ request }) => {
     // 1. Resolve destination area ID
     const destinationAreaId = await resolveDestinationAreaId(province, city, district, postalCode, apiKey, biteshipApiUrl);
     if (!destinationAreaId) {
-      console.warn('[Rates Endpoint] Failed to resolve Biteship destination Area ID. Using mock fallback.');
+      console.warn('[Rates Endpoint] [FALLBACK TRIGGERED] Failed to resolve Biteship destination Area ID for:', province, city);
       return new Response(JSON.stringify(baselineRates), {
         status: 200,
         headers: { 'Content-Type': 'application/json' }
@@ -229,7 +230,7 @@ export const POST: APIRoute = async ({ request }) => {
 
     if (!ratesRes.ok) {
       const errText = await ratesRes.text();
-      console.warn('[Rates Endpoint] Biteship API returned error status:', ratesRes.status, errText);
+      console.warn('[Rates Endpoint] [FALLBACK TRIGGERED] Biteship API returned error status:', ratesRes.status, errText);
       const fallbackRates = { ...baselineRates, metadata: { destinationAreaId } };
       return new Response(JSON.stringify(fallbackRates), {
         status: 200,
@@ -239,7 +240,7 @@ export const POST: APIRoute = async ({ request }) => {
 
     const ratesData = await ratesRes.json();
     if (!ratesData.success || !ratesData.pricing) {
-      console.warn('[Rates Endpoint] Biteship API response unsuccessful, returning mock rates:', ratesData);
+      console.warn('[Rates Endpoint] [FALLBACK TRIGGERED] Biteship API response unsuccessful:', JSON.stringify(ratesData));
       const fallbackRates = { ...baselineRates, metadata: { destinationAreaId } };
       return new Response(JSON.stringify(fallbackRates), {
         status: 200,
@@ -258,6 +259,9 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     dynamicRates.sort((a, b) => a.cost - b.cost);
+    
+    console.log(`[Rates Endpoint] [LIVE SUCCESS] Live response count: ${dynamicRates.length}`);
+    console.log(`[Rates Endpoint] Courier names returned:`, dynamicRates.map(r => r.name).join(', '));
 
     const finalRates = {
       rates: dynamicRates.length > 0 ? dynamicRates : baselineRates.rates,
@@ -265,6 +269,10 @@ export const POST: APIRoute = async ({ request }) => {
         destinationAreaId: destinationAreaId
       }
     };
+    
+    if (dynamicRates.length === 0) {
+      console.log(`[Rates Endpoint] [FALLBACK TRIGGERED] Live pricing array was empty.`);
+    }
 
     return new Response(JSON.stringify(finalRates), {
       status: 200,
