@@ -53,6 +53,7 @@ export interface OrderDetails {
     city: string;
     postalCode: string;
     fullAddress: string;
+    destinationAreaId?: string | null;
   };
   items: OrderItem[];
   shippingMethod: string;

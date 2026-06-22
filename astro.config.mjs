@@ -1,8 +1,9 @@
 import { defineConfig } from 'astro/config';
+import vercel from '@astrojs/vercel/serverless';
 
 // https://astro.build/config
 export default defineConfig({
-  // Since we are building a purely static page with local optimizations,
-  // we do not need complex adapters for the initial build.
+  output: 'hybrid',
+  adapter: vercel(),
   site: 'https://aquietspace.id',
 });

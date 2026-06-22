@@ -99,42 +99,8 @@ import Layout from '../layouts/Layout.astro';
             ⚠️ Connection to shipping servers offline. A temporary flat-rate shipping fee of IDR 20.000 has been applied.
           </div>
           <div id="shipping-methods-container" class="hidden">
-            <div class="shipping-options-stack">
-              <!-- JNE Regular -->
-              <label class="custom-radio-option checked">
-                <input type="radio" id="shipping-jne" name="shippingMethod" value="JNE Regular" data-cost="0" data-estimate="" checked />
-                <div class="option-details">
-                  <div class="option-header">
-                    <span class="option-name">JNE Regular</span>
-                    <span class="option-fee" id="fee-jne">—</span>
-                  </div>
-                  <span class="option-estimate" id="estimate-jne"></span>
-                </div>
-              </label>
-
-              <!-- J&T Regular -->
-              <label class="custom-radio-option">
-                <input type="radio" id="shipping-jnt" name="shippingMethod" value="J&T Regular" data-cost="0" data-estimate="" />
-                <div class="option-details">
-                  <div class="option-header">
-                    <span class="option-name">J&T Regular</span>
-                    <span class="option-fee" id="fee-jnt">—</span>
-                  </div>
-                  <span class="option-estimate" id="estimate-jnt"></span>
-                </div>
-              </label>
-
-              <!-- SiCepat Regular -->
-              <label class="custom-radio-option">
-                <input type="radio" id="shipping-sicepat" name="shippingMethod" value="SiCepat Regular" data-cost="0" data-estimate="" />
-                <div class="option-details">
-                  <div class="option-header">
-                    <span class="option-name">SiCepat Regular</span>
-                    <span class="option-fee" id="fee-sicepat">—</span>
-                  </div>
-                  <span class="option-estimate" id="estimate-sicepat"></span>
-                </div>
-              </label>
+            <div class="shipping-options-stack" id="shipping-options-stack">
+              <!-- Rendered dynamically via JS -->
             </div>
           </div>
         </div>
@@ -617,6 +583,7 @@ import Layout from '../layouts/Layout.astro';
     var selectedShippingMethod = 'JNE Regular';
 
     var selectedDestination = null;
+    var resolvedDestinationAreaId = null;
 
     function formatIDR(amount) {
       return 'IDR ' + amount.toLocaleString('id-ID').replace(/,/g, '.');
@@ -719,6 +686,9 @@ import Layout from '../layouts/Layout.astro';
         }
         if (sanitized.length === 5) {
           postalCodeInput.setCustomValidity('');
+          if (selectedDestination) {
+            calculateAndShowShipping();
+          }
         } else {
           postalCodeInput.setCustomValidity('Please enter a valid 5-digit postal code.');
         }
@@ -953,6 +923,7 @@ import Layout from '../layouts/Layout.astro';
     }
 
     // Dynamic Shipping Rates calculation simulator
+    // Dynamic Shipping Rates calculation calling server API
     function calculateAndShowShipping() {
       if (!selectedDestination) return;
 
@@ -960,101 +931,129 @@ import Layout from '../layouts/Layout.astro';
       if (shippingPlaceholderMsg) shippingPlaceholderMsg.style.display = 'none';
       if (shippingMethodsContainer) shippingMethodsContainer.classList.remove('hidden');
 
-      var rates = {};
-      
-      try {
-        var triggerSimulatedFail = selectedDestination.city.toLowerCase().includes('fail') || 
-                                   window.location.search.includes('simulate_shipping_fail');
-        
-        if (triggerSimulatedFail) {
-          throw new Error("Shipping provider API timed out or rate limit reached.");
-        }
+      // Set to loading indicator state
+      var feeJneEl = document.getElementById('fee-jne');
+      var feeJntEl = document.getElementById('fee-jnt');
+      var feeSicepatEl = document.getElementById('fee-sicepat');
+      if (feeJneEl) feeJneEl.textContent = 'Calculating...';
+      if (feeJntEl) feeJntEl.textContent = 'Calculating...';
+      if (feeSicepatEl) feeSicepatEl.textContent = 'Calculating...';
 
+      var triggerSimulatedFail = selectedDestination.city.toLowerCase().includes('fail') || 
+                                 window.location.search.includes('simulate_shipping_fail');
+
+      if (triggerSimulatedFail) {
+        handleRatesFallback(new Error("Simulated failure."));
+        return;
+      }
+
+      fetch('/api/shipping/rates', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          province: selectedDestination.province,
+          city: selectedDestination.city,
+          district: selectedDestination.district,
+          postalCode: postalCodeInput ? postalCodeInput.value.trim() : selectedDestination.postalCode,
+          items: cartItems
+        })
+      })
+      .then(function(res) {
+        if (!res.ok) throw new Error("API responded with status " + res.status);
+        return res.json();
+      })
+      .then(function(rates) {
         if (fallbackNoticeEl) fallbackNoticeEl.classList.add('hidden');
+        renderRates(rates);
+      })
+      .catch(function(err) {
+        console.warn('[Shipping API Fallback Triggered]:', err.message);
+        handleRatesFallback(err);
+      });
+    }
 
-        var province = selectedDestination.province;
-        var baseCost = 15000;
-        var javaEtd = "2–4 Business Days";
-        var outerEtd = "3–7 Business Days";
-
-        if (province === "DKI Jakarta") {
-          baseCost = 10000;
-          javaEtd = "1–2 Business Days";
-        } else if (province === "Jawa Barat" || province === "Jawa Tengah" || province === "Jawa Timur" || province === "Banten" || province === "DI Yogyakarta") {
-          baseCost = 18000;
-          javaEtd = "2–4 Business Days";
-        } else if (province === "Bali" || province === "Nusa Tenggara Barat" || province === "Nusa Tenggara Timur") {
-          baseCost = 28000;
-          outerEtd = "3–5 Business Days";
-        } else {
-          baseCost = 38000;
-          outerEtd = "4–7 Business Days";
-        }
-
-        rates = {
-          'JNE Regular': { cost: baseCost, etd: province.includes("Jakarta") || province.includes("Jawa") || province.includes("Banten") || province.includes("Yogyakarta") ? javaEtd : outerEtd },
-          'J&T Regular': { cost: baseCost + 3000, etd: province.includes("Jakarta") || province.includes("Jawa") || province.includes("Banten") || province.includes("Yogyakarta") ? javaEtd : outerEtd },
-          'SiCepat Regular': { cost: baseCost + 2000, etd: province.includes("Jakarta") || province.includes("Jawa") || province.includes("Banten") || province.includes("Yogyakarta") ? javaEtd : outerEtd }
-        };
-      } catch (e) {
-        console.warn('[Shipping API Fallback Triggered]:', e.message);
-        if (fallbackNoticeEl) fallbackNoticeEl.classList.remove('hidden');
-
-        var flatRateCost = 20000;
-        var fallbackEtd = "3–5 Business Days (Standard)";
-        
-        rates = {
-          'JNE Regular': { cost: flatRateCost, etd: fallbackEtd },
-          'J&T Regular': { cost: flatRateCost, etd: fallbackEtd },
-          'SiCepat Regular': { cost: flatRateCost, etd: fallbackEtd }
-        };
-      }
-
-      var jneRadio = document.getElementById('shipping-jne');
-      var jntRadio = document.getElementById('shipping-jnt');
-      var sicepatRadio = document.getElementById('shipping-sicepat');
-
-      if (jneRadio) {
-        jneRadio.setAttribute('data-cost', rates['JNE Regular'].cost);
-        jneRadio.setAttribute('data-estimate', rates['JNE Regular'].etd);
-        var feeEl = document.getElementById('fee-jne');
-        if (feeEl) feeEl.textContent = formatIDR(rates['JNE Regular'].cost);
-        var estEl = document.getElementById('estimate-jne');
-        if (estEl) estEl.textContent = 'Estimated: ' + rates['JNE Regular'].etd;
-      }
-      
-      if (jntRadio) {
-        jntRadio.setAttribute('data-cost', rates['J&T Regular'].cost);
-        jntRadio.setAttribute('data-estimate', rates['J&T Regular'].etd);
-        var feeEl = document.getElementById('fee-jnt');
-        if (feeEl) feeEl.textContent = formatIDR(rates['J&T Regular'].cost);
-        var estEl = document.getElementById('estimate-jnt');
-        if (estEl) estEl.textContent = 'Estimated: ' + rates['J&T Regular'].etd;
-      }
-
-      if (sicepatRadio) {
-        sicepatRadio.setAttribute('data-cost', rates['SiCepat Regular'].cost);
-        sicepatRadio.setAttribute('data-estimate', rates['SiCepat Regular'].etd);
-        var feeEl = document.getElementById('fee-sicepat');
-        if (feeEl) feeEl.textContent = formatIDR(rates['SiCepat Regular'].cost);
-        var estEl = document.getElementById('estimate-sicepat');
-        if (estEl) estEl.textContent = 'Estimated: ' + rates['SiCepat Regular'].etd;
-      }
-
-      var checkedRadio = document.querySelector('input[name="shippingMethod"]:checked');
-      if (!checkedRadio) {
-        if (jneRadio) {
-          jneRadio.checked = true;
-          jneRadio.closest('.custom-radio-option').classList.add('checked');
-          currentShippingCost = rates['JNE Regular'].cost;
-          selectedShippingMethod = 'JNE Regular';
-        }
+    function renderRates(response) {
+      if (response && response.metadata && response.metadata.destinationAreaId) {
+        resolvedDestinationAreaId = response.metadata.destinationAreaId;
       } else {
-        currentShippingCost = parseInt(checkedRadio.getAttribute('data-cost') || '0', 10);
-        selectedShippingMethod = checkedRadio.value;
+        resolvedDestinationAreaId = null;
       }
 
+      var stack = document.getElementById('shipping-options-stack');
+      if (!stack) return;
+      stack.innerHTML = '';
+
+      var rates = response.rates || [];
+      if (rates.length === 0) {
+        stack.innerHTML = '<p class="satoshi-text">No available couriers for this location.</p>';
+        currentShippingCost = 0;
+        updateTotals();
+        return;
+      }
+
+      for (var i = 0; i < rates.length; i++) {
+        var rate = rates[i];
+        var isChecked = i === 0 ? 'checked' : '';
+        var checkedClass = i === 0 ? ' checked' : '';
+        var id = 'shipping-' + i;
+        
+        var html = '<label class="custom-radio-option' + checkedClass + '">' +
+          '<input type="radio" id="' + id + '" name="shippingMethod" value="' + rate.name + '" data-cost="' + rate.cost + '" data-estimate="' + rate.etd + '" ' + isChecked + ' />' +
+          '<div class="option-details">' +
+            '<div class="option-header">' +
+              '<span class="option-name">' + rate.name + '</span>' +
+              '<span class="option-fee">' + formatIDR(rate.cost) + '</span>' +
+            '</div>' +
+            '<span class="option-estimate">Estimated: ' + rate.etd + '</span>' +
+          '</div>' +
+        '</label>';
+        
+        stack.insertAdjacentHTML('beforeend', html);
+      }
+
+      var newRadios = document.querySelectorAll('input[name="shippingMethod"]');
+      newRadios.forEach(function(radio) {
+        radio.addEventListener('change', function(e) {
+          newRadios.forEach(function(r) {
+            r.closest('.custom-radio-option').classList.remove('checked');
+          });
+          if (e.target.checked) {
+            e.target.closest('.custom-radio-option').classList.add('checked');
+            currentShippingCost = parseInt(e.target.getAttribute('data-cost') || '0', 10);
+            selectedShippingMethod = e.target.value;
+            updateTotals();
+          }
+        });
+      });
+
+      var firstRadio = document.getElementById('shipping-0');
+      if (firstRadio) {
+        currentShippingCost = parseInt(firstRadio.getAttribute('data-cost') || '0', 10);
+        selectedShippingMethod = firstRadio.value;
+      } else {
+        currentShippingCost = 0;
+      }
       updateTotals();
+    }
+
+    function handleRatesFallback(err) {
+      resolvedDestinationAreaId = null;
+      var fallbackNoticeEl = document.getElementById('shipping-fallback-notice');
+      if (fallbackNoticeEl) fallbackNoticeEl.classList.remove('hidden');
+
+      var flatRateCost = 20000;
+      var fallbackEtd = "3–5 Business Days (Standard)";
+      
+      var ratesResponse = {
+        rates: [
+          { name: 'JNE Regular (Fallback)', cost: flatRateCost, etd: fallbackEtd }
+        ],
+        metadata: { destinationAreaId: null }
+      };
+
+      renderRates(ratesResponse);
     }
 
     function resetShippingRates() {
@@ -1064,20 +1063,7 @@ import Layout from '../layouts/Layout.astro';
       updateTotals();
     }
 
-    var shippingRadios = document.querySelectorAll('input[name="shippingMethod"]');
-    shippingRadios.forEach(function(radio) {
-      radio.addEventListener('change', function(e) {
-        shippingRadios.forEach(function(r) {
-          r.closest('.custom-radio-option').classList.remove('checked');
-        });
-        if (e.target.checked) {
-          e.target.closest('.custom-radio-option').classList.add('checked');
-          currentShippingCost = parseInt(e.target.getAttribute('data-cost') || '0', 10);
-          selectedShippingMethod = e.target.value;
-          updateTotals();
-        }
-      });
-    });
+    // Dynamic radios are bound in renderRates
 
     var paymentRadios = document.querySelectorAll('input[name="paymentMethod"]');
     paymentRadios.forEach(function(radio) {
@@ -1151,7 +1137,8 @@ import Layout from '../layouts/Layout.astro';
             province: selectedDestination.province,
             city: selectedDestination.city,
             postalCode: postalCodeVal,
-            fullAddress: addressVal
+            fullAddress: addressVal,
+            destinationAreaId: resolvedDestinationAreaId
           },
           items: purchasedItems,
           shippingMethod: selectedShippingMethod,
