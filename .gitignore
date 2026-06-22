@@ -12,6 +12,7 @@ pnpm-debug.log*
 
 # runtime data
 .astro/
+.vercel/
 
 # environment variables
 .env
