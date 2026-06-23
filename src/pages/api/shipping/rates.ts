@@ -218,7 +218,7 @@ export const POST: APIRoute = async ({ request }) => {
     const ratesPayload = {
       origin_area_id: originAreaId,
       destination_area_id: destinationAreaId,
-      couriers: 'jne', // Temporary for debugging
+      couriers: 'jne,ninja,anteraja',
       items: biteshipItems
     };
 
@@ -237,9 +237,9 @@ export const POST: APIRoute = async ({ request }) => {
       const errText = await ratesRes.text();
       console.warn('[Rates Endpoint] [FALLBACK TRIGGERED] Biteship API returned error status:', ratesRes.status, errText);
       
-      // TEMPORARILY DISABLED FALLBACK - RETURN ACTUAL ERROR TO CLIENT
-      return new Response(errText, {
-        status: ratesRes.status,
+      const fallbackRates = { ...baselineRates, metadata: { destinationAreaId } };
+      return new Response(JSON.stringify(fallbackRates), {
+        status: 200,
         headers: { 'Content-Type': 'application/json' }
       });
     }
@@ -248,9 +248,9 @@ export const POST: APIRoute = async ({ request }) => {
     if (!ratesData.success || !ratesData.pricing) {
       console.warn('[Rates Endpoint] [FALLBACK TRIGGERED] Biteship API response unsuccessful:', JSON.stringify(ratesData));
       
-      // TEMPORARILY DISABLED FALLBACK - RETURN ACTUAL ERROR TO CLIENT
-      return new Response(JSON.stringify(ratesData), {
-        status: 400,
+      const fallbackRates = { ...baselineRates, metadata: { destinationAreaId } };
+      return new Response(JSON.stringify(fallbackRates), {
+        status: 200,
         headers: { 'Content-Type': 'application/json' }
       });
     }

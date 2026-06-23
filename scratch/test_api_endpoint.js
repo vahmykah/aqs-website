@@ -1,8 +1,8 @@
 const payload = {
-  province: "Jawa Barat",
-  city: "Bandung",
-  district: "Sumur Bandung",
-  postalCode: "40111",
+  province: "DKI Jakarta",
+  city: "Jakarta Selatan",
+  district: "Kebayoran Baru",
+  postalCode: "12110",
   items: [{ quantity: 1, name: "SOE Bag" }]
 };
 
