@@ -235,9 +235,14 @@ export const POST: APIRoute = async ({ request }) => {
 
     if (!ratesRes.ok) {
       const errText = await ratesRes.text();
-      console.warn('[Rates Endpoint] [FALLBACK TRIGGERED] Biteship API returned error status:', ratesRes.status, errText);
+      console.warn('\n--- [BITESHIP DEBUG LOG] ---');
+      console.warn('1. Raw Biteship Response: HTTP', ratesRes.status, errText);
+      console.warn('2. BaselineRates Fallback Used? YES');
       
       const fallbackRates = { ...baselineRates, metadata: { destinationAreaId } };
+      console.warn('3. Final Rates Array Returned:', JSON.stringify(fallbackRates.rates, null, 2));
+      console.warn('----------------------------\n');
+
       return new Response(JSON.stringify(fallbackRates), {
         status: 200,
         headers: { 'Content-Type': 'application/json' }
@@ -246,9 +251,14 @@ export const POST: APIRoute = async ({ request }) => {
 
     const ratesData = await ratesRes.json();
     if (!ratesData.success || !ratesData.pricing) {
-      console.warn('[Rates Endpoint] [FALLBACK TRIGGERED] Biteship API response unsuccessful:', JSON.stringify(ratesData));
+      console.warn('\n--- [BITESHIP DEBUG LOG] ---');
+      console.warn('1. Raw Biteship Response:', JSON.stringify(ratesData));
+      console.warn('2. BaselineRates Fallback Used? YES');
       
       const fallbackRates = { ...baselineRates, metadata: { destinationAreaId } };
+      console.warn('3. Final Rates Array Returned:', JSON.stringify(fallbackRates.rates, null, 2));
+      console.warn('----------------------------\n');
+
       return new Response(JSON.stringify(fallbackRates), {
         status: 200,
         headers: { 'Content-Type': 'application/json' }
@@ -277,9 +287,15 @@ export const POST: APIRoute = async ({ request }) => {
       }
     };
     
+    console.warn('\n--- [BITESHIP DEBUG LOG] ---');
+    console.warn('1. Raw Biteship Response:', JSON.stringify(ratesData));
     if (dynamicRates.length === 0) {
-      console.log(`[Rates Endpoint] [FALLBACK TRIGGERED] Live pricing array was empty.`);
+      console.warn('2. BaselineRates Fallback Used? YES (Live pricing array was empty)');
+    } else {
+      console.warn('2. BaselineRates Fallback Used? NO');
     }
+    console.warn('3. Final Rates Array Returned:', JSON.stringify(finalRates.rates, null, 2));
+    console.warn('----------------------------\n');
 
     return new Response(JSON.stringify(finalRates), {
       status: 200,
