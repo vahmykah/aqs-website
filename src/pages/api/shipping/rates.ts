@@ -206,6 +206,13 @@ export const POST: APIRoute = async ({ request }) => {
 
     // 1. Resolve destination area ID
     const destinationAreaId = await resolveDestinationAreaId(province, city, district, postalCode, apiKey, biteshipApiUrl);
+    
+    console.warn('\n--- [BITESHIP AREA ID LOOKUP] ---');
+    console.warn('Origin Area ID (From Env):', originAreaId);
+    console.warn('Destination Area ID (Resolved):', destinationAreaId);
+    console.warn('Destination Input:', { province, city, district, postalCode });
+    console.warn('---------------------------------\n');
+
     if (!destinationAreaId) {
       console.warn('[Rates Endpoint] [FALLBACK TRIGGERED] Failed to resolve Biteship destination Area ID for:', province, city);
       return new Response(JSON.stringify(baselineRates), {
@@ -215,10 +222,13 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     // 2. Query Biteship Rates API
+    // Using a comprehensive list of standard Indonesian couriers so we don't miss any newly activated ones
+    const activeCouriersList = 'jne,jnt,sicepat,ninja,anteraja,lion,paxel,grab,gojek,shopee,sap,wahana,pos';
+    
     const ratesPayload = {
       origin_area_id: originAreaId,
       destination_area_id: destinationAreaId,
-      couriers: 'jne,ninja,anteraja',
+      couriers: activeCouriersList,
       items: biteshipItems
     };
 
