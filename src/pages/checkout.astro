@@ -109,30 +109,12 @@ import Layout from '../layouts/Layout.astro';
         <div class="summary-card">
           <h2 class="sidebar-title sentient-heading">Payment Method</h2>
           <div class="payment-options-stack">
-            <!-- QRIS -->
+            <!-- Manual Bank Transfer -->
             <label class="custom-radio-option checked">
-              <input type="radio" name="paymentMethod" value="QRIS" checked />
+              <input type="radio" name="paymentMethod" value="Manual Bank Transfer" checked />
               <div class="option-details">
-                <span class="option-name">QRIS</span>
-                <span class="option-subtitle">Pay instantly using any bank or e-wallet QR scanner</span>
-              </div>
-            </label>
-
-            <!-- Virtual Account -->
-            <label class="custom-radio-option">
-              <input type="radio" name="paymentMethod" value="Virtual Account" />
-              <div class="option-details">
-                <span class="option-name">Virtual Account</span>
-                <span class="option-subtitle">Bank transfer via BCA, Mandiri, BNI, or BRI</span>
-              </div>
-            </label>
-
-            <!-- E-Wallet -->
-            <label class="custom-radio-option">
-              <input type="radio" name="paymentMethod" value="E-Wallet" />
-              <div class="option-details">
-                <span class="option-name">E-Wallet</span>
-                <span class="option-subtitle">Pay via GoPay, OVO, ShopeePay, or Dana</span>
+                <span class="option-name">Manual Bank Transfer</span>
+                <span class="option-subtitle">Transfer directly to our BCA account</span>
               </div>
             </label>
           </div>
@@ -1109,11 +1091,7 @@ import Layout from '../layouts/Layout.astro';
           return;
         }
 
-        var paymentMethodName = selectedPaymentRadio ? selectedPaymentRadio.value : 'QRIS';
-
-        var createdAt = new Date().toISOString();
-        var randomNum = Math.floor(10000 + Math.random() * 90000);
-        var generatedOrderId = 'AQS-' + randomNum;
+        var paymentMethodName = 'Manual Bank Transfer';
 
         var purchasedItems = [];
         for (var idx = 0; idx < cartItems.length; idx++) {
@@ -1122,12 +1100,12 @@ import Layout from '../layouts/Layout.astro';
             id: cartItem.id,
             name: cartItem.name,
             price: Number(cartItem.price),
-            quantity: Number(cartItem.quantity)
+            quantity: Number(cartItem.quantity),
+            image: cartItem.image
           });
         }
 
         var orderData = {
-          orderId: generatedOrderId,
           customer: {
             name: customerNameVal,
             email: customerEmailVal,
@@ -1145,25 +1123,40 @@ import Layout from '../layouts/Layout.astro';
           shippingCost: Number(currentShippingCost),
           subtotal: Number(subtotal),
           orderTotal: Number(subtotal + currentShippingCost),
-          paymentMethod: paymentMethodName,
-          paymentStatus: 'Pending Payment',
-          statusHistory: [
-            {
-              status: 'Pending Payment',
-              timestamp: createdAt,
-              note: 'Order created in checkout, awaiting payment confirmation.'
-            }
-          ],
-          createdAt: createdAt,
-          updatedAt: createdAt
+          paymentMethod: paymentMethodName
         };
 
-        localStorage.setItem('aqs_pending_order', JSON.stringify(orderData));
+        var submitBtn = document.getElementById('place-order-btn');
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'PROCESSING...';
 
-        console.log('[Email Queue System Trigger] Queuing ORDER_AWAITING receipt in checkout submission.');
-
-        // Redirect to /payment gateway page
-        window.location.href = '/payment';
+        fetch('/api/orders/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(orderData)
+        })
+        .then(function(res) {
+          if (!res.ok) throw new Error('Failed to create order');
+          return res.json();
+        })
+        .then(function(data) {
+          if (data.success && data.orderId) {
+            // Clear cart
+            localStorage.removeItem('aqs_cart');
+            window.dispatchEvent(new CustomEvent('aqs-cart-update', { detail: { items: [] } }));
+            
+            // Redirect to payment page with ID
+            window.location.href = '/payment?id=' + data.orderId;
+          } else {
+            throw new Error(data.error || 'Unknown error');
+          }
+        })
+        .catch(function(err) {
+          console.error('Order creation error:', err);
+          alert('Failed to place order. Please try again.');
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'PLACE ORDER';
+        });
       });
     }
 

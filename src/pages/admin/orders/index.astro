@@ -1,0 +1,195 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import { supabase } from '../../../lib/supabase';
+
+export const prerender = false;
+
+// Check Auth
+const authCookie = Astro.cookies.get('admin_auth');
+if (!authCookie || authCookie.value !== 'authenticated') {
+  return Astro.redirect('/admin/login');
+}
+
+// Fetch orders
+const { data: orders, error } = await supabase
+  .from('orders')
+  .select('*')
+  .order('created_at', { ascending: false });
+
+if (error) {
+  console.error('Failed to fetch orders:', error);
+}
+---
+
+<Layout title="Admin Orders | A Quiet Space" noindex={true}>
+  <div class="admin-wrapper">
+    <div class="admin-header">
+      <h1 class="sentient-heading">ORDER MANAGEMENT</h1>
+      <a href="/" class="logout-link">Back to Store</a>
+    </div>
+
+    <div class="table-container">
+      <table class="orders-table">
+        <thead>
+          <tr>
+            <th>Order ID</th>
+            <th>Date</th>
+            <th>Customer</th>
+            <th>Total</th>
+            <th>Payment Status</th>
+            <th>Fulfillment</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {orders && orders.map((order) => (
+            <tr>
+              <td class="font-bold">{order.id}</td>
+              <td>{new Date(order.created_at).toLocaleDateString()}</td>
+              <td>
+                <div>{order.customer_name}</div>
+                <div class="text-xs text-secondary">{order.customer_email}</div>
+              </td>
+              <td>IDR {order.total_amount.toLocaleString('id-ID')}</td>
+              <td>
+                <span class={`status-badge ${order.payment_status === 'Paid' ? 'success' : 'warning'}`}>
+                  {order.payment_status}
+                </span>
+              </td>
+              <td>
+                <span class={`status-badge ${order.fulfillment_status === 'Shipped' ? 'success' : 'neutral'}`}>
+                  {order.fulfillment_status}
+                </span>
+              </td>
+              <td>
+                <a href={`/admin/orders/${order.id}`} class="view-btn">View</a>
+              </td>
+            </tr>
+          ))}
+          {(!orders || orders.length === 0) && (
+            <tr>
+              <td colspan="7" class="text-center py-8">No orders found.</td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .admin-wrapper {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 3rem 2rem 6rem 2rem;
+  }
+
+  .admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 3rem;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 1.5rem;
+  }
+
+  h1 {
+    font-size: var(--text-xl);
+    letter-spacing: 0.05em;
+  }
+
+  .logout-link {
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-text-secondary);
+    text-decoration: underline;
+  }
+
+  .table-container {
+    overflow-x: auto;
+  }
+
+  .orders-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+  }
+
+  .orders-table th, .orders-table td {
+    padding: 1.25rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .orders-table th {
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-text-secondary);
+    font-weight: 500;
+  }
+
+  .font-bold {
+    font-weight: 700;
+  }
+
+  .text-xs {
+    font-size: var(--text-xs);
+  }
+
+  .text-secondary {
+    color: var(--color-text-secondary);
+  }
+
+  .text-center {
+    text-align: center;
+  }
+
+  .py-8 {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+  }
+
+  .status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .status-badge.success {
+    background-color: rgba(0, 255, 0, 0.1);
+    color: #4ade80;
+  }
+
+  .status-badge.warning {
+    background-color: rgba(250, 173, 20, 0.1);
+    color: #faad14;
+  }
+
+  .status-badge.neutral {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--color-text-primary);
+  }
+
+  .view-btn {
+    display: inline-block;
+    border: 1px solid var(--color-border);
+    padding: 0.4rem 1rem;
+    color: var(--color-text-primary);
+    text-decoration: none;
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    transition: background-color 0.2s;
+  }
+
+  .view-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+</style>

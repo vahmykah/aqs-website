@@ -1,0 +1,119 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+export const prerender = false;
+
+let errorMsg = '';
+
+if (Astro.request.method === 'POST') {
+  const data = await Astro.request.formData();
+  const password = data.get('password');
+  
+  if (password === 'aqs-admin-2026') {
+    Astro.cookies.set('admin_auth', 'authenticated', { path: '/admin', httpOnly: true, maxAge: 60 * 60 * 24 });
+    return Astro.redirect('/admin/orders');
+  } else {
+    errorMsg = 'Invalid password.';
+  }
+}
+---
+
+<Layout title="Admin Login | A Quiet Space" noindex={true}>
+  <div class="login-wrapper">
+    <div class="login-card">
+      <h1 class="sentient-heading">ADMIN PORTAL</h1>
+      
+      <form method="POST" class="login-form">
+        <div class="form-group">
+          <label for="password" class="form-label">Password</label>
+          <input type="password" id="password" name="password" required class="form-input" />
+        </div>
+        
+        {errorMsg && <p class="error-msg">{errorMsg}</p>}
+        
+        <button type="submit" class="submit-btn">LOGIN</button>
+      </form>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .login-wrapper {
+    min-height: 70vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+  }
+
+  .login-card {
+    background-color: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--color-border);
+    padding: 3rem 2rem;
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+  }
+
+  h1 {
+    font-size: var(--text-xl);
+    letter-spacing: 0.1em;
+    margin-bottom: 2rem;
+  }
+
+  .login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    text-align: left;
+  }
+
+  .form-label {
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-text-secondary);
+    margin-bottom: 0.5rem;
+    display: block;
+  }
+
+  .form-input {
+    background-color: transparent;
+    border: 1px solid var(--color-border);
+    color: var(--color-text-primary);
+    padding: 0.9rem;
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    width: 100%;
+  }
+
+  .form-input:focus {
+    outline: none;
+    border-color: var(--color-text-primary);
+  }
+
+  .error-msg {
+    color: #f87171;
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    margin: 0;
+  }
+
+  .submit-btn {
+    background-color: var(--color-button-bg);
+    color: var(--color-button-text);
+    padding: 1rem;
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    border: none;
+    cursor: pointer;
+    margin-top: 1rem;
+  }
+
+  .submit-btn:hover {
+    opacity: 0.9;
+  }
+</style>
